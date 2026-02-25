@@ -1,0 +1,19 @@
+# pixi environments
+.pixi/*
+!.pixi/config.toml
+target/
+
+# Cursor
+.cursor/
+.agent*/
+
+# Lock files
+*.lock
+pnpm-lock.yaml
+
+# Node.js
+node_modules/
+dist/
+*.tsbuildinfo
+
+.mozz_crashes/

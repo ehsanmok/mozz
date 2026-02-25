@@ -1,0 +1,58 @@
+[workspace]
+authors = ["ehsanmok <ehsanmok@users.noreply.github.com>"]
+channels = ["https://conda.modular.com/max-nightly", "conda-forge"]
+name = "mozz"
+platforms = ["osx-arm64", "linux-aarch64", "linux-64"]
+version = "0.1.0"
+preview = ["pixi-build"]
+
+[package]
+name = "mozz"
+version = "0.1.0"
+
+[package.build]
+backend = { name = "pixi-build-rattler-build", version = "*" }
+
+[dependencies]
+mojo = "<1.0.0"
+
+[feature.dev.dependencies]
+git        = ">=2"               # For version checks and pre-commit
+pre-commit = ">=4.2.0,<5"
+mojodoc    = { git = "https://github.com/ehsanmok/mojodoc.git", branch = "main" }
+
+[environments]
+default = { features = ["dev"], solve-group = "default" }
+
+[tasks]
+# ── Tests ────────────────────────────────────────────────────────────────────
+test-rng       = "mojo -I . tests/test_rng.mojo"
+test-mutators  = "mojo -I . tests/test_mutators.mojo"
+test-corpus    = "mojo -I . tests/test_corpus.mojo"
+test-arbitrary = "mojo -I . tests/test_arbitrary.mojo"
+test-property  = "mojo -I . tests/test_property.mojo"
+test-runner    = "mojo -I . tests/test_runner.mojo"
+
+tests = { cmd = "mojo -I . tests/test_rng.mojo && mojo -I . tests/test_mutators.mojo && mojo -I . tests/test_corpus.mojo && mojo -I . tests/test_arbitrary.mojo && mojo -I . tests/test_property.mojo && mojo -I . tests/test_runner.mojo && mojo -I . examples/01_raw_bytes.mojo && mojo -I . examples/02_property_test.mojo && mojo -I . examples/03_custom_arbitrary.mojo && mojo -I . examples/04_replay_crash.mojo" }
+
+# ── Examples ─────────────────────────────────────────────────────────────────
+example-raw-bytes     = "mojo -I . examples/01_raw_bytes.mojo"
+example-property-test = "mojo -I . examples/02_property_test.mojo"
+example-custom-type   = "mojo -I . examples/03_custom_arbitrary.mojo"
+example-replay        = "mojo -I . examples/04_replay_crash.mojo"
+
+examples = { cmd = "mojo -I . examples/01_raw_bytes.mojo && mojo -I . examples/02_property_test.mojo && mojo -I . examples/03_custom_arbitrary.mojo && mojo -I . examples/04_replay_crash.mojo" }
+
+# ── Benchmark ─────────────────────────────────────────────────────────────────
+bench = "mojo -I . benchmark/bench_runner.mojo"
+
+# ── Docs (powered by mojodoc) ─────────────────────────────────────────────────
+# docs:       build + serve at http://localhost:3000/mozz/ (blocks terminal)
+# docs-build: build static HTML → target/doc/ (for CI / GitHub Pages)
+docs       = "mojodoc ./mozz --open"
+docs-build = "mojodoc ./mozz --out-dir target/doc --base-url /mozz/"
+
+# ── Format ────────────────────────────────────────────────────────────────────
+install-pre-commit = "pre-commit install"
+format       = { cmd = "mojo format mozz tests examples benchmark", depends-on = ["install-pre-commit"] }
+format-check = { cmd = "bash -c 'mojo format mozz tests examples benchmark && git diff --exit-code mozz tests examples benchmark || (echo \"Error: Code is not formatted. Run \\\"pixi run format\\\" to fix.\" && exit 1)'" }

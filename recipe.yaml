@@ -1,0 +1,41 @@
+# rattler-build recipe for mozz
+# Pure-Mojo package — no C/C++ dependencies, no FFI.
+
+context:
+  name: mozz
+  version: "0.1.0"
+
+package:
+  name: ${{ name }}
+  version: ${{ version }}
+
+source:
+  path: .
+
+build:
+  script:
+    - mojo --version
+    # Package the pure-Mojo library into a .mojopkg for distribution
+    - mojo package mozz -o $PREFIX/lib/mojo/mozz.mojopkg
+
+requirements:
+  build:
+    - mojo-compiler
+  host:
+    - mojo-compiler
+  run: []
+
+about:
+  homepage: https://github.com/ehsanmok/mozz
+  license: MIT
+  summary: Pure-Mojo fuzzing and property-based testing library
+  description: |
+    mozz is a zero-external-dependency fuzzing and property-based testing
+    library for Mojo.  Features include:
+
+    - Raw byte fuzzing via fuzz() with mutation-based input generation
+    - Typed property tests via forall[T]() with Arbitrary trait
+    - Byte property tests via forall_bytes()
+    - Standalone delta-debugging minimizer (shrink_bytes)
+    - Crash deduplication, replay, and report generation
+    - Pure Mojo — no libFuzzer, no compiler flags required
