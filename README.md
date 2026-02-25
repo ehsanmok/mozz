@@ -4,6 +4,9 @@
 
 # mozz
 
+[![CI](https://github.com/ehsanmok/mozz/actions/workflows/ci.yml/badge.svg)](https://github.com/ehsanmok/mozz/actions/workflows/ci.yml)
+[![Docs](https://github.com/ehsanmok/mozz/actions/workflows/docs.yml/badge.svg)](https://github.com/ehsanmok/mozz/actions/workflows/docs.yml)
+
 > [!WARNING]
 > **Under development.** APIs may change.
 
