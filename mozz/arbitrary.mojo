@@ -34,6 +34,7 @@ Custom types:
 """
 
 from collections import InlineArray
+from sys.intrinsics import _type_is_eq
 
 from .rng import Xoshiro256
 
@@ -492,7 +493,7 @@ struct Gen[T: ImplicitlyCopyable & Movable]:
     """
 
     @staticmethod
-    fn generate(mut rng: Xoshiro256) -> T:
+    fn generate(mut rng: Xoshiro256) -> Self.T:
         """Generate a random instance of ``T`` using boundary-biased sampling.
 
         Args:
@@ -502,25 +503,25 @@ struct Gen[T: ImplicitlyCopyable & Movable]:
             A pseudo-random value of type ``T``.
         """
         @parameter
-        if T == Bool:
-            return FuzzableBool.generate(rng)
-        elif T == UInt8:
-            return FuzzableUInt8.generate(rng)
-        elif T == UInt16:
-            return FuzzableUInt16.generate(rng)
-        elif T == UInt32:
-            return FuzzableUInt32.generate(rng)
-        elif T == UInt64:
-            return FuzzableUInt64.generate(rng)
-        elif T == Int:
-            return FuzzableInt.generate(rng)
-        elif T == String:
-            return FuzzableString.generate(rng)
+        if _type_is_eq[Self.T, Bool]():
+            return rebind[Self.T](FuzzableBool.generate(rng))
+        elif _type_is_eq[Self.T, UInt8]():
+            return rebind[Self.T](FuzzableUInt8.generate(rng))
+        elif _type_is_eq[Self.T, UInt16]():
+            return rebind[Self.T](FuzzableUInt16.generate(rng))
+        elif _type_is_eq[Self.T, UInt32]():
+            return rebind[Self.T](FuzzableUInt32.generate(rng))
+        elif _type_is_eq[Self.T, UInt64]():
+            return rebind[Self.T](FuzzableUInt64.generate(rng))
+        elif _type_is_eq[Self.T, Int]():
+            return rebind[Self.T](FuzzableInt.generate(rng))
+        elif _type_is_eq[Self.T, String]():
+            return rebind[Self.T](FuzzableString.generate(rng))
         else:
             constrained[False, "Gen[T]: unsupported T; write a FuzzableXXX helper"]()
 
     @staticmethod
-    fn minimize(value: T) -> List[T]:
+    fn minimize(value: Self.T) -> List[Self.T]:
         """Return simpler variants of ``value`` for counterexample minimization.
 
         Args:
@@ -530,20 +531,27 @@ struct Gen[T: ImplicitlyCopyable & Movable]:
             A list of simpler variants (may be empty).
         """
         @parameter
-        if T == Bool:
-            return FuzzableBool.minimize(value)
-        elif T == UInt8:
-            return FuzzableUInt8.minimize(value)
-        elif T == UInt16:
-            return FuzzableUInt16.minimize(value)
-        elif T == UInt32:
-            return FuzzableUInt32.minimize(value)
-        elif T == UInt64:
-            return FuzzableUInt64.minimize(value)
-        elif T == Int:
-            return FuzzableInt.minimize(value)
-        elif T == String:
-            return FuzzableString.minimize(value)
+        if _type_is_eq[Self.T, Bool]():
+            var r = FuzzableBool.minimize(rebind[Bool](value))
+            return rebind_var[List[Self.T]](r^)
+        elif _type_is_eq[Self.T, UInt8]():
+            var r = FuzzableUInt8.minimize(rebind[UInt8](value))
+            return rebind_var[List[Self.T]](r^)
+        elif _type_is_eq[Self.T, UInt16]():
+            var r = FuzzableUInt16.minimize(rebind[UInt16](value))
+            return rebind_var[List[Self.T]](r^)
+        elif _type_is_eq[Self.T, UInt32]():
+            var r = FuzzableUInt32.minimize(rebind[UInt32](value))
+            return rebind_var[List[Self.T]](r^)
+        elif _type_is_eq[Self.T, UInt64]():
+            var r = FuzzableUInt64.minimize(rebind[UInt64](value))
+            return rebind_var[List[Self.T]](r^)
+        elif _type_is_eq[Self.T, Int]():
+            var r = FuzzableInt.minimize(rebind[Int](value))
+            return rebind_var[List[Self.T]](r^)
+        elif _type_is_eq[Self.T, String]():
+            var r = FuzzableString.minimize(rebind[String](value))
+            return rebind_var[List[Self.T]](r^)
         else:
             constrained[False, "Gen[T]: unsupported T; write a FuzzableXXX helper"]()
-            return List[T]()
+            return List[Self.T]()
