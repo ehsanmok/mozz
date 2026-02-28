@@ -6,6 +6,7 @@ target/
 # Cursor
 .cursor/
 .agent*/
+.claude/
 
 # Lock files
 *.lock

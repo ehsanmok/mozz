@@ -21,19 +21,6 @@ from .mutator import MutatorChain, default_mutator
 from .corpus import Corpus, _fnv1a64, _mkdir, _write_file, _zero_pad
 
 
-fn _crash_markers() -> List[String]:
-    """Return the list of error message substrings that indicate a crash."""
-    return [
-        "assertion failed",
-        "index out of bounds",
-        "null pointer",
-        "use after free",
-        "stack overflow",
-        "panic",
-        "aborted",
-    ]
-
-
 comptime FuzzTarget = fn(List[UInt8]) raises -> None
 
 
@@ -271,6 +258,7 @@ fn fuzz(
 # ── Heuristic corpus growth ───────────────────────────────────────────────────
 
 
+@always_inline
 fn _length_bucket(n: Int) -> Int:
     """Return the log2 bucket for length ``n`` (0 = empty, 1 = 1, 2 = 2–3, ...).
 
@@ -353,10 +341,20 @@ fn _is_crash(msg: String) -> Bool:
         ``True`` if the message contains a crash marker substring.
     """
     var lower = msg.lower()
-    var markers = _crash_markers()
-    for i in range(len(markers)):
-        if lower.find(markers[i]) >= 0:
-            return True
+    if lower.find("assertion failed") >= 0:
+        return True
+    if lower.find("index out of bounds") >= 0:
+        return True
+    if lower.find("null pointer") >= 0:
+        return True
+    if lower.find("use after free") >= 0:
+        return True
+    if lower.find("stack overflow") >= 0:
+        return True
+    if lower.find("panic") >= 0:
+        return True
+    if lower.find("aborted") >= 0:
+        return True
     return False
 
 

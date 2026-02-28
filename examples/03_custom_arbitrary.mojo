@@ -1,10 +1,10 @@
-"""Example 3: Custom Arbitrary implementation.
+"""Example 3: Custom Fuzzable implementation.
 
-Demonstrates how to implement the ``Arbitrary`` trait for a user-defined
+Demonstrates how to implement the ``Fuzzable`` pattern for a user-defined
 type and use it with ``forall()``.
 
 Run:
-    pixi run example-3
+    pixi run example-custom-type
 """
 
 from mozz import forall
@@ -58,17 +58,17 @@ struct Color(ImplicitlyCopyable, Movable):
         )
 
 
-# ── Arbitrary for Color ───────────────────────────────────────────────────────
+# ── Fuzzable for Color ────────────────────────────────────────────────────────
 
 
-struct ArbitraryColor:
-    """``Arbitrary`` implementation for ``Color``.
+struct FuzzableColor:
+    """Generator and minimizer for ``Color``.
 
-    Generates random 8-bit RGB triples.  Shrinks by halving each channel.
+    Generates random 8-bit RGB triples.  Minimizes by halving each channel.
     """
 
     @staticmethod
-    fn arbitrary(mut rng: Xoshiro256) -> Color:
+    fn generate(mut rng: Xoshiro256) -> Color:
         """Generate a random ``Color``.
 
         Args:
@@ -80,8 +80,8 @@ struct ArbitraryColor:
         return Color(r=rng.next_byte(), g=rng.next_byte(), b=rng.next_byte())
 
     @staticmethod
-    fn shrink(value: Color) -> List[Color]:
-        """Shrink by halving each channel independently.
+    fn minimize(value: Color) -> List[Color]:
+        """Minimize by halving each channel independently.
 
         Args:
             value: The colour to simplify.
@@ -100,15 +100,15 @@ struct ArbitraryColor:
         return out^
 
 
-# ── Generator / shrinker helpers ──────────────────────────────────────────────
+# ── Generator / minimizer helpers ─────────────────────────────────────────────
 
 
 fn gen_color(mut rng: Xoshiro256) -> Color:
-    return ArbitraryColor.arbitrary(rng)
+    return FuzzableColor.generate(rng)
 
 
-fn shrink_color(c: Color) -> List[Color]:
-    return ArbitraryColor.shrink(c)
+fn minimize_color(c: Color) -> List[Color]:
+    return FuzzableColor.minimize(c)
 
 
 # ── Properties ────────────────────────────────────────────────────────────────
@@ -141,24 +141,24 @@ fn invert_changes_colour(c: Color) raises -> Bool:
 
 
 fn main() raises:
-    print("=== Example 3: Custom Arbitrary ===\n")
+    print("=== Example 3: Custom Fuzzable ===\n")
 
     print("1. Testing double-invert identity over 3 000 random colours...")
     forall[Color](
-        double_invert_is_identity, gen_color, shrink_color, trials=3_000, seed=1
+        double_invert_is_identity, gen_color, minimize_color, trials=3_000, seed=1
     )
     print("   PASS: invert(invert(c)) == c for all colours\n")
 
     print("2. Testing luminance stays in [0, 255] over 5 000 colours...")
     forall[Color](
-        luminance_in_range, gen_color, shrink_color, trials=5_000, seed=2
+        luminance_in_range, gen_color, minimize_color, trials=5_000, seed=2
     )
     print("   PASS: luminance always in [0, 255]\n")
 
     print("3. Testing that invert always changes the colour (2 000 trials)...")
     forall[Color](
-        invert_changes_colour, gen_color, shrink_color, trials=2_000, seed=3
+        invert_changes_colour, gen_color, minimize_color, trials=2_000, seed=3
     )
     print("   PASS: invert always changes the colour\n")
 
-    print("All custom Arbitrary properties hold!")
+    print("All custom Fuzzable properties hold!")

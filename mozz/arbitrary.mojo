@@ -1,15 +1,15 @@
 """Typed random value generation for property-based testing.
 
-The ``Arbitrary`` trait enables ``forall[T: Arbitrary](...)`` to generate
+The ``Fuzzable`` trait enables ``forall[T: Fuzzable](...)`` to generate
 well-typed test cases.  Implementations for all primitive Mojo types ship
 with the library.
 
 Example:
     ```mojo
     var rng = Xoshiro256(seed=99)
-    var u = UInt16.arbitrary(rng)   # random UInt16 (boundary-biased)
-    var s = String.arbitrary(rng)   # random valid UTF-8 string
-    var xs = List[UInt8].arbitrary(rng)  # List[UInt8] with Arbitrary[UInt8]
+    var u = FuzzableUInt16.generate(rng)   # random UInt16 (boundary-biased)
+    var s = FuzzableString.generate(rng)   # random valid UTF-8 string
+    var xs = FuzzableBytes.generate(rng)   # random List[UInt8]
     ```
 
 Custom types:
@@ -19,11 +19,11 @@ Custom types:
         var y: Int
 
         @staticmethod
-        fn arbitrary(mut rng: Xoshiro256) -> Point:
-            return Point(x=Int.arbitrary(rng), y=Int.arbitrary(rng))
+        fn generate(mut rng: Xoshiro256) -> Point:
+            return Point(x=FuzzableInt.generate(rng), y=FuzzableInt.generate(rng))
 
         @staticmethod
-        fn shrink(value: Point) -> List[Point]:
+        fn minimize(value: Point) -> List[Point]:
             var out = List[Point]()
             if value.x != 0:
                 out.append(Point(x=0, y=value.y))
@@ -33,64 +33,32 @@ Custom types:
     ```
 """
 
+from collections import InlineArray
+
 from .rng import Xoshiro256
 
 
-fn _int_boundaries() -> List[Int]:
-    """Return boundary integer values for numeric type generation.
 
-    Includes both positive and negative extremes so that ``ArbitraryInt``
-    exercises the full signed 64-bit domain.
-    """
-    return [
-        0,
-        1,
-        -1,
-        127,
-        -127,
-        128,
-        -128,
-        255,
-        -255,
-        256,
-        -256,
-        32767,
-        -32767,
-        32768,
-        -32768,
-        65535,
-        -65535,
-        65536,
-        -65536,
-        2147483647,
-        -2147483647,
-        2147483648,
-        -2147483648,
-        4294967295,
-        -4294967295,
-    ]
+# ── Fuzzable trait ─────────────────────────────────────────────────────────────
 
 
-# ── Arbitrary trait ────────────────────────────────────────────────────────────
-
-
-trait Arbitrary(Copyable, Movable):
+trait Fuzzable(Copyable, Movable):
     """Trait for types that can generate random instances of themselves.
 
-    Implement ``arbitrary(rng)`` to produce a random value and optionally
-    ``shrink(value)`` to return simpler variants for counterexample
+    Implement ``generate(rng)`` to produce a random value and optionally
+    ``minimize(value)`` to return simpler variants for counterexample
     minimization.
 
-    Types implementing ``Arbitrary`` work automatically with ``forall[T]()``
+    Types implementing ``Fuzzable`` work automatically with ``forall[T]()``
     and ``forall_bytes()``.
 
     Note:
-        Requires ``Copyable`` and ``Movable`` because ``shrink()`` returns
+        Requires ``Copyable`` and ``Movable`` because ``minimize()`` returns
         ``List[Self]``, which requires ``Self: Copyable``.
     """
 
     @staticmethod
-    fn arbitrary(mut rng: Xoshiro256) -> Self:
+    fn generate(mut rng: Xoshiro256) -> Self:
         """Generate a random instance of ``Self``.
 
         Args:
@@ -102,10 +70,10 @@ trait Arbitrary(Copyable, Movable):
         ...
 
     @staticmethod
-    fn shrink(value: Self) -> List[Self]:
+    fn minimize(value: Self) -> List[Self]:
         """Return simpler variants of ``value`` for counterexample minimization.
 
-        The default implementation returns an empty list (no shrinking).
+        The default implementation returns an empty list (no minimization).
         Override to provide problem-specific simplifications.
 
         Args:
@@ -120,11 +88,11 @@ trait Arbitrary(Copyable, Movable):
 # ── Primitive implementations ──────────────────────────────────────────────────
 
 
-struct ArbitraryBool:
-    """``Arbitrary`` implementation for ``Bool``."""
+struct FuzzableBool:
+    """``Fuzzable`` implementation for ``Bool``."""
 
     @staticmethod
-    fn arbitrary(mut rng: Xoshiro256) -> Bool:
+    fn generate(mut rng: Xoshiro256) -> Bool:
         """Generate a uniformly random boolean.
 
         Args:
@@ -136,11 +104,11 @@ struct ArbitraryBool:
         return rng.next_bool()
 
     @staticmethod
-    fn shrink(value: Bool) -> List[Bool]:
-        """Shrink: ``True`` → ``[False]``, ``False`` → ``[]``.
+    fn minimize(value: Bool) -> List[Bool]:
+        """Minimize: ``True`` → ``[False]``, ``False`` → ``[]``.
 
         Args:
-            value: The value to shrink.
+            value: The value to minimize.
 
         Returns:
             A simpler variant list.
@@ -151,11 +119,11 @@ struct ArbitraryBool:
         return out^
 
 
-struct ArbitraryUInt8:
-    """``Arbitrary`` implementation for ``UInt8``."""
+struct FuzzableUInt8:
+    """``Fuzzable`` implementation for ``UInt8``."""
 
     @staticmethod
-    fn arbitrary(mut rng: Xoshiro256) -> UInt8:
+    fn generate(mut rng: Xoshiro256) -> UInt8:
         """Generate a random ``UInt8`` with 20% boundary bias.
 
         Args:
@@ -165,23 +133,18 @@ struct ArbitraryUInt8:
             A pseudo-random ``UInt8``.
         """
         if rng.next_below(10) < 2:  # 20% boundary
-            var boundary_bytes: List[UInt8] = [
-                0x00,
-                0x01,
-                0x7F,
-                0x80,
-                0xFE,
-                0xFF,
+            var boundaries: InlineArray[UInt8, 6] = [
+                0x00, 0x01, 0x7F, 0x80, 0xFE, 0xFF
             ]
-            return boundary_bytes[Int(rng.next_below(6))]
+            return boundaries[Int(rng.next_below(6))]
         return rng.next_byte()
 
     @staticmethod
-    fn shrink(value: UInt8) -> List[UInt8]:
-        """Shrink toward 0: ``v`` → ``[0, v/2]`` (if distinct).
+    fn minimize(value: UInt8) -> List[UInt8]:
+        """Minimize toward 0: ``v`` → ``[0, v/2]`` (if distinct).
 
         Args:
-            value: Value to shrink.
+            value: Value to minimize.
 
         Returns:
             Simpler variants.
@@ -194,11 +157,11 @@ struct ArbitraryUInt8:
         return out^
 
 
-struct ArbitraryUInt16:
-    """``Arbitrary`` implementation for ``UInt16``."""
+struct FuzzableUInt16:
+    """``Fuzzable`` implementation for ``UInt16``."""
 
     @staticmethod
-    fn arbitrary(mut rng: Xoshiro256) -> UInt16:
+    fn generate(mut rng: Xoshiro256) -> UInt16:
         """Generate a random ``UInt16`` with 20% boundary bias.
 
         Args:
@@ -208,27 +171,18 @@ struct ArbitraryUInt16:
             A pseudo-random ``UInt16``.
         """
         if rng.next_below(10) < 2:
-            var boundaries: List[UInt16] = [
-                0,
-                1,
-                127,
-                128,
-                255,
-                256,
-                32767,
-                32768,
-                65534,
-                65535,
+            var boundaries: InlineArray[UInt16, 10] = [
+                0, 1, 127, 128, 255, 256, 32767, 32768, 65534, 65535
             ]
             return boundaries[Int(rng.next_below(10))]
         return UInt16(rng.next_u32() & 0xFFFF)
 
     @staticmethod
-    fn shrink(value: UInt16) -> List[UInt16]:
-        """Shrink toward 0.
+    fn minimize(value: UInt16) -> List[UInt16]:
+        """Minimize toward 0.
 
         Args:
-            value: Value to shrink.
+            value: Value to minimize.
 
         Returns:
             Simpler variants.
@@ -241,11 +195,11 @@ struct ArbitraryUInt16:
         return out^
 
 
-struct ArbitraryUInt32:
-    """``Arbitrary`` implementation for ``UInt32``."""
+struct FuzzableUInt32:
+    """``Fuzzable`` implementation for ``UInt32``."""
 
     @staticmethod
-    fn arbitrary(mut rng: Xoshiro256) -> UInt32:
+    fn generate(mut rng: Xoshiro256) -> UInt32:
         """Generate a random ``UInt32`` with 20% boundary bias.
 
         Args:
@@ -255,31 +209,19 @@ struct ArbitraryUInt32:
             A pseudo-random ``UInt32``.
         """
         if rng.next_below(10) < 2:
-            var boundaries: List[UInt32] = [
-                0,
-                1,
-                127,
-                128,
-                255,
-                256,
-                32767,
-                32768,
-                65535,
-                65536,
-                2147483647,
-                2147483648,
-                4294967294,
-                4294967295,
+            var boundaries: InlineArray[UInt32, 14] = [
+                0, 1, 127, 128, 255, 256, 32767, 32768, 65535, 65536,
+                2147483647, 2147483648, 4294967294, 4294967295
             ]
             return boundaries[Int(rng.next_below(14))]
         return rng.next_u32()
 
     @staticmethod
-    fn shrink(value: UInt32) -> List[UInt32]:
-        """Shrink toward 0.
+    fn minimize(value: UInt32) -> List[UInt32]:
+        """Minimize toward 0.
 
         Args:
-            value: Value to shrink.
+            value: Value to minimize.
 
         Returns:
             Simpler variants.
@@ -292,11 +234,11 @@ struct ArbitraryUInt32:
         return out^
 
 
-struct ArbitraryUInt64:
-    """``Arbitrary`` implementation for ``UInt64``."""
+struct FuzzableUInt64:
+    """``Fuzzable`` implementation for ``UInt64``."""
 
     @staticmethod
-    fn arbitrary(mut rng: Xoshiro256) -> UInt64:
+    fn generate(mut rng: Xoshiro256) -> UInt64:
         """Generate a random ``UInt64`` with 20% boundary bias.
 
         Args:
@@ -306,35 +248,21 @@ struct ArbitraryUInt64:
             A pseudo-random ``UInt64``.
         """
         if rng.next_below(10) < 2:
-            var boundaries: List[UInt64] = [
-                0,
-                1,
-                127,
-                128,
-                255,
-                256,
-                32767,
-                32768,
-                65535,
-                65536,
-                2147483647,
-                2147483648,
-                4294967295,
-                4294967296,
-                9223372036854775807,
-                9223372036854775808,
-                18446744073709551614,
-                18446744073709551615,
+            var boundaries: InlineArray[UInt64, 18] = [
+                0, 1, 127, 128, 255, 256, 32767, 32768, 65535, 65536,
+                2147483647, 2147483648, 4294967295, 4294967296,
+                9223372036854775807, 9223372036854775808,
+                18446744073709551614, 18446744073709551615
             ]
             return boundaries[Int(rng.next_below(18))]
         return rng.next_u64()
 
     @staticmethod
-    fn shrink(value: UInt64) -> List[UInt64]:
-        """Shrink toward 0.
+    fn minimize(value: UInt64) -> List[UInt64]:
+        """Minimize toward 0.
 
         Args:
-            value: Value to shrink.
+            value: Value to minimize.
 
         Returns:
             Simpler variants.
@@ -347,11 +275,11 @@ struct ArbitraryUInt64:
         return out^
 
 
-struct ArbitraryInt:
-    """``Arbitrary`` implementation for ``Int``."""
+struct FuzzableInt:
+    """``Fuzzable`` implementation for ``Int``."""
 
     @staticmethod
-    fn arbitrary(mut rng: Xoshiro256) -> Int:
+    fn generate(mut rng: Xoshiro256) -> Int:
         """Generate a random ``Int`` with 20% boundary bias.
 
         Generates values across the full signed range, including negative
@@ -365,20 +293,24 @@ struct ArbitraryInt:
             A pseudo-random ``Int`` covering the full signed 64-bit range.
         """
         if rng.next_below(10) < 2:
-            var int_b = _int_boundaries()
-            var idx = Int(rng.next_below(UInt64(len(int_b))))
-            return int_b[idx]
+            var boundaries: InlineArray[Int, 25] = [
+                0, 1, -1, 127, -127, 128, -128, 255, -255, 256, -256,
+                32767, -32767, 32768, -32768, 65535, -65535, 65536, -65536,
+                2147483647, -2147483647, 2147483648, -2147483648,
+                4294967295, -4294967295
+            ]
+            return boundaries[Int(rng.next_below(25))]
         # Generate a non-negative magnitude then randomly negate it so that
         # both positive and negative halves of the signed range are covered.
         var magnitude = Int(rng.next_u64() >> 1)
         return -magnitude if rng.next_bool() else magnitude
 
     @staticmethod
-    fn shrink(value: Int) -> List[Int]:
-        """Shrink toward 0.
+    fn minimize(value: Int) -> List[Int]:
+        """Minimize toward 0.
 
         Args:
-            value: Value to shrink.
+            value: Value to minimize.
 
         Returns:
             Simpler variants.
@@ -394,22 +326,25 @@ struct ArbitraryInt:
         return out^
 
 
-struct ArbitraryString:
-    """``Arbitrary`` implementation for ``String``.
+struct FuzzableString:
+    """``Fuzzable`` implementation for ``String``.
 
-    Generates valid UTF-8 strings of length 0–256.  The character set is
-    weighted: 70% ASCII printable, 15% ASCII control, 15% multi-byte UTF-8.
+    Generates valid UTF-8 strings with up to 256 code points.  The character
+    set is weighted: 70% ASCII printable, 15% ASCII control, 15% two-byte
+    UTF-8.  Because two-byte codepoints occupy 2 bytes each, the maximum byte
+    length is 512.
     """
 
     @staticmethod
-    fn arbitrary(mut rng: Xoshiro256) -> String:
+    fn generate(mut rng: Xoshiro256) -> String:
         """Generate a random valid UTF-8 string.
 
         Args:
             rng: PRNG state (advanced in-place).
 
         Returns:
-            A pseudo-random ``String`` of length 0–256 (byte count).
+            A pseudo-random ``String`` of up to 256 code points (up to 512
+            bytes when two-byte UTF-8 codepoints are selected).
         """
         var length = Int(rng.next_below(257))
         var out = String()
@@ -434,11 +369,11 @@ struct ArbitraryString:
         return out^
 
     @staticmethod
-    fn shrink(value: String) -> List[String]:
-        """Shrink by dropping the second half or removing a character.
+    fn minimize(value: String) -> List[String]:
+        """Minimize by dropping the second half or removing a character.
 
         Args:
-            value: String to shrink.
+            value: String to minimize.
 
         Returns:
             Simpler string variants.
@@ -453,15 +388,15 @@ struct ArbitraryString:
         return out^
 
 
-struct ArbitraryBytes:
-    """``Arbitrary`` implementation for raw bytes ``List[UInt8]``.
+struct FuzzableBytes:
+    """``Fuzzable`` implementation for raw bytes ``List[UInt8]``.
 
     Generates length 0–256 byte sequences with no UTF-8 constraint.
     Useful for raw byte fuzzing targets.
     """
 
     @staticmethod
-    fn arbitrary(mut rng: Xoshiro256) -> List[UInt8]:
+    fn generate(mut rng: Xoshiro256) -> List[UInt8]:
         """Generate a random byte sequence of length 0–256.
 
         Args:
@@ -471,17 +406,16 @@ struct ArbitraryBytes:
             A ``List[UInt8]`` of pseudo-random bytes.
         """
         var length = Int(rng.next_below(257))
-        var out = List[UInt8](capacity=length)
-        for _ in range(length):
-            out.append(rng.next_byte())
+        var out = List[UInt8](length=length, fill=UInt8(0))
+        rng.fill(out)
         return out^
 
     @staticmethod
-    fn shrink(value: List[UInt8]) -> List[List[UInt8]]:
-        """Shrink by halving or truncating.
+    fn minimize(value: List[UInt8]) -> List[List[UInt8]]:
+        """Minimize by halving or truncating.
 
         Args:
-            value: Bytes to shrink.
+            value: Bytes to minimize.
 
         Returns:
             Simpler byte sequences.
@@ -531,3 +465,85 @@ fn _encode_utf8_codepoint(cp: UInt32) -> String:
         return s^
     else:
         return chr(0xFFFD)  # replacement character
+
+
+# ── Parametric generator / minimizer ──────────────────────────────────────────
+
+
+struct Gen[T: ImplicitlyCopyable & Movable]:
+    """Compile-time-dispatched generator and minimizer for built-in types.
+
+    Provides a unified parametric API so callers write ``Gen[UInt8].generate(rng)``
+    instead of ``FuzzableUInt8.generate(rng)``.  Supported type parameters:
+    ``Bool``, ``UInt8``, ``UInt16``, ``UInt32``, ``UInt64``, ``Int``,
+    ``String``.  For ``List[UInt8]`` use ``FuzzableBytes`` directly (generic
+    list instantiations are not yet dispatchable via ``@parameter if``).
+
+    For user-defined types, write a companion ``FuzzableMyType`` struct
+    following the same ``generate`` / ``minimize`` static-method pattern and
+    pass it explicitly to ``forall()``.
+
+    Example:
+        ```mojo
+        var rng = Xoshiro256(seed=1)
+        var v = Gen[UInt16].generate(rng)      # boundary-biased UInt16
+        var smaller = Gen[UInt16].minimize(v)   # simpler candidates
+        ```
+    """
+
+    @staticmethod
+    fn generate(mut rng: Xoshiro256) -> T:
+        """Generate a random instance of ``T`` using boundary-biased sampling.
+
+        Args:
+            rng: PRNG state (advanced in-place).
+
+        Returns:
+            A pseudo-random value of type ``T``.
+        """
+        @parameter
+        if T == Bool:
+            return FuzzableBool.generate(rng)
+        elif T == UInt8:
+            return FuzzableUInt8.generate(rng)
+        elif T == UInt16:
+            return FuzzableUInt16.generate(rng)
+        elif T == UInt32:
+            return FuzzableUInt32.generate(rng)
+        elif T == UInt64:
+            return FuzzableUInt64.generate(rng)
+        elif T == Int:
+            return FuzzableInt.generate(rng)
+        elif T == String:
+            return FuzzableString.generate(rng)
+        else:
+            constrained[False, "Gen[T]: unsupported T; write a FuzzableXXX helper"]()
+
+    @staticmethod
+    fn minimize(value: T) -> List[T]:
+        """Return simpler variants of ``value`` for counterexample minimization.
+
+        Args:
+            value: The counterexample to simplify.
+
+        Returns:
+            A list of simpler variants (may be empty).
+        """
+        @parameter
+        if T == Bool:
+            return FuzzableBool.minimize(value)
+        elif T == UInt8:
+            return FuzzableUInt8.minimize(value)
+        elif T == UInt16:
+            return FuzzableUInt16.minimize(value)
+        elif T == UInt32:
+            return FuzzableUInt32.minimize(value)
+        elif T == UInt64:
+            return FuzzableUInt64.minimize(value)
+        elif T == Int:
+            return FuzzableInt.minimize(value)
+        elif T == String:
+            return FuzzableString.minimize(value)
+        else:
+            constrained[False, "Gen[T]: unsupported T; write a FuzzableXXX helper"]()
+            return List[T]()

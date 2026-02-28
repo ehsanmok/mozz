@@ -4,23 +4,23 @@
 them.  On failure the run stops and raises an error.
 
 ``forall_bytes()`` is a simpler variant for raw-byte properties that works
-without the ``Arbitrary`` trait.
+without the ``Fuzzable`` trait.
 
 Example:
     ```mojo
-    from mozz import forall, forall_bytes, ArbitraryUInt16
+    from mozz import forall, forall_bytes, FuzzableUInt16
 
     # Property: addition must not overflow past u16 max
     fn no_wrap(v: UInt16) raises -> Bool:
         return Int(v) + Int(v) >= Int(v)
 
     fn gen_u16(mut rng: Xoshiro256) -> UInt16:
-        return ArbitraryUInt16.arbitrary(rng)
+        return FuzzableUInt16.generate(rng)
 
-    fn shrink_u16(v: UInt16) -> List[UInt16]:
-        return ArbitraryUInt16.shrink(v)
+    fn minimize_u16(v: UInt16) -> List[UInt16]:
+        return FuzzableUInt16.minimize(v)
 
-    forall[UInt16](no_wrap, gen_u16, shrink_u16, trials=2000)
+    forall[UInt16](no_wrap, gen_u16, minimize_u16, trials=2000)
 
     # Raw bytes: decode_one never over-reads
     fn safe_decode(data: List[UInt8]) raises -> Bool:
@@ -40,15 +40,15 @@ from .rng import Xoshiro256
 fn forall[
     T: ImplicitlyCopyable & Movable
 ](
-    prop: fn(T) raises -> Bool,
-    gen: fn(mut Xoshiro256) -> T,
-    shrink_fn: fn(T) -> List[T],
+    prop: fn (T) raises -> Bool,
+    gen: fn (mut Xoshiro256) -> T,
+    minimize_fn: fn (T) -> List[T],
     trials: Int = 1_000,
     seed: UInt64 = 0,
 ) raises:
     """Test a boolean property over ``trials`` random values of type ``T``.
 
-    When a counterexample is found, ``shrink_fn`` is called iteratively to
+    When a counterexample is found, ``minimize_fn`` is called iteratively to
     minimize it before the error is raised.
 
     Parameters:
@@ -56,16 +56,16 @@ fn forall[
            ``Movable``).
 
     Args:
-        prop:      The property predicate.  Return ``False`` or raise to
-                   signal a counterexample.
-        gen:       Generator function -- ``fn(mut Xoshiro256) -> T``.
-        shrink_fn: Shrinker -- ``fn(T) -> List[T]``.  Called to minimize
-                   the counterexample before raising.
-        trials:    Number of random trials (default 1 000).
-        seed:      PRNG seed (0 = derive from stack address).
+        prop:        The property predicate.  Return ``False`` or raise to
+                     signal a counterexample.
+        gen:         Generator function -- ``fn(mut Xoshiro256) -> T``.
+        minimize_fn: Minimizer -- ``fn(T) -> List[T]``.  Called to minimize
+                     the counterexample before raising.
+        trials:      Number of random trials (default 1 000).
+        seed:        PRNG seed (0 = derive from stack address).
 
     Raises:
-        Error: If a counterexample is found (after shrinking).
+        Error: If a counterexample is found (after minimization).
     """
     var rng = Xoshiro256(seed)
     for _ in range(trials):
@@ -81,14 +81,14 @@ fn forall[
             fail_msg = String(e)
 
         if failed:
-            # Minimize the counterexample by iterating shrink_fn until no
+            # Minimize the counterexample by iterating minimize_fn until no
             # simpler candidate still fails.
             var current = value
             var steps = 0
-            var shrink_improved = True
-            while shrink_improved:
-                shrink_improved = False
-                var candidates = shrink_fn(current)
+            var minimize_improved = True
+            while minimize_improved:
+                minimize_improved = False
+                var candidates = minimize_fn(current)
                 for i in range(len(candidates)):
                     var candidate = candidates[i]
                     var candidate_fails = False
@@ -100,12 +100,12 @@ fn forall[
                     if candidate_fails:
                         current = candidate
                         steps += 1
-                        shrink_improved = True
+                        minimize_improved = True
                         break
-            var shrink_note = ""
+            var minimize_note = ""
             if steps > 0:
-                shrink_note = " (shrunk " + String(steps) + " step(s))"
-            raise Error("mozz: property failed -- " + fail_msg + shrink_note)
+                minimize_note = " (minimized " + String(steps) + " step(s))"
+            raise Error("mozz: property failed -- " + fail_msg + minimize_note)
 
 
 fn forall_bytes(
@@ -116,7 +116,7 @@ fn forall_bytes(
 ) raises:
     """Test a boolean property over ``trials`` random byte sequences.
 
-    Does not require ``Arbitrary`` — uses uniform random bytes with length
+    Does not require ``Fuzzable`` — uses uniform random bytes with length
     in ``[0, max_len]``.  On failure the failing bytes are hex-encoded in
     the error message.
 
@@ -170,7 +170,7 @@ fn _ddmin(
 ) -> List[UInt8]:
     """Minimize a failing byte sequence using delta-debugging (granularity-doubling).
 
-    Uses the same algorithm as ``shrink_bytes``: starts by trying to remove
+    Uses the same algorithm as ``minimize_bytes``: starts by trying to remove
     half the input, then doubles granularity on failure until no further
     reduction is possible.
 

@@ -12,15 +12,15 @@ Example:
         except e:
             return _is_crash_message(String(e))
 
-    var minimal = shrink_bytes(crashing_input, is_crash)
+    var minimal = minimize_bytes(crashing_input, is_crash)
     print(len(minimal), "bytes (was", len(crashing_input), ")")
     ```
 """
 
 
-fn shrink_bytes(
+fn minimize_bytes(
     input: List[UInt8],
-    is_crash: fn(List[UInt8]) raises -> Bool,
+    is_crash: fn (List[UInt8]) raises -> Bool,
 ) raises -> List[UInt8]:
     """Minimize ``input`` to the smallest prefix/subset that still crashes.
 
@@ -43,7 +43,7 @@ fn shrink_bytes(
     """
     if not _check(input, is_crash):
         raise Error(
-            "mozz/shrink: initial input does not trigger the crash predicate"
+            "mozz/minimize: initial input does not trigger the crash predicate"
         )
 
     var current = input.copy()
@@ -79,7 +79,7 @@ fn shrink_bytes(
 
 fn _check(
     data: List[UInt8],
-    is_crash: fn(List[UInt8]) raises -> Bool,
+    is_crash: fn (List[UInt8]) raises -> Bool,
 ) -> Bool:
     """Invoke ``is_crash`` and treat any exception as a crash.
 

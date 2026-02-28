@@ -21,6 +21,7 @@ Example:
 from memory import UnsafePointer
 
 
+@always_inline
 fn _splitmix64(mut state: UInt64) -> UInt64:
     """Single step of splitmix64, used for seeding.
 
@@ -110,6 +111,7 @@ struct Xoshiro256(ImplicitlyCopyable, Movable):
         self.s2 = copy.s2
         self.s3 = copy.s3
 
+    @always_inline
     fn next_u64(mut self) -> UInt64:
         """Return the next uniformly random ``UInt64``.
 
@@ -128,6 +130,7 @@ struct Xoshiro256(ImplicitlyCopyable, Movable):
         self.s3 = _rotl64(self.s3, 45)
         return result
 
+    @always_inline
     fn next_u32(mut self) -> UInt32:
         """Return the next uniformly random ``UInt32``.
 
@@ -136,6 +139,7 @@ struct Xoshiro256(ImplicitlyCopyable, Movable):
         """
         return UInt32(self.next_u64() >> 32)
 
+    @always_inline
     fn next_byte(mut self) -> UInt8:
         """Return a uniformly random byte in ``[0, 255]``.
 
@@ -144,6 +148,7 @@ struct Xoshiro256(ImplicitlyCopyable, Movable):
         """
         return UInt8(self.next_u64() & 0xFF)
 
+    @always_inline
     fn next_below(mut self, n: UInt64) -> UInt64:
         """Return a uniformly random value in ``[0, n)``.
 
@@ -164,6 +169,7 @@ struct Xoshiro256(ImplicitlyCopyable, Movable):
             if r >= threshold:
                 return r % n
 
+    @always_inline
     fn next_bool(mut self) -> Bool:
         """Return a uniformly random boolean (50 % each side).
 

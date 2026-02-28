@@ -5,7 +5,7 @@ function and mozz will throw mutated bytes at it, looking for panics /
 assertion failures.
 
 Run:
-    pixi run example-1
+    pixi run example-raw-bytes
 """
 
 from mozz import fuzz, FuzzConfig

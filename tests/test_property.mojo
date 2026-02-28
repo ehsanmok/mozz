@@ -6,7 +6,7 @@ and the same seed reproduces the same failure.
 
 from testing import assert_equal, assert_true, assert_false, TestSuite
 from mozz.rng import Xoshiro256
-from mozz.arbitrary import ArbitraryUInt8, ArbitraryUInt16, ArbitraryInt
+from mozz.arbitrary import FuzzableUInt8, FuzzableUInt16, FuzzableInt
 from mozz.property import forall, forall_bytes
 
 
@@ -52,31 +52,31 @@ fn bytes_raises_on_nonempty(data: List[UInt8]) raises -> Bool:
     return True
 
 
-# ── Generator / shrinker wrappers ─────────────────────────────────────────────
+# ── Generator / minimizer wrappers ────────────────────────────────────────────
 
 
 fn gen_uint8(mut rng: Xoshiro256) -> UInt8:
-    return ArbitraryUInt8.arbitrary(rng)
+    return FuzzableUInt8.generate(rng)
 
 
-fn shrink_uint8(v: UInt8) -> List[UInt8]:
-    return ArbitraryUInt8.shrink(v)
+fn minimize_uint8(v: UInt8) -> List[UInt8]:
+    return FuzzableUInt8.minimize(v)
 
 
 fn gen_uint16(mut rng: Xoshiro256) -> UInt16:
-    return ArbitraryUInt16.arbitrary(rng)
+    return FuzzableUInt16.generate(rng)
 
 
-fn shrink_uint16(v: UInt16) -> List[UInt16]:
-    return ArbitraryUInt16.shrink(v)
+fn minimize_uint16(v: UInt16) -> List[UInt16]:
+    return FuzzableUInt16.minimize(v)
 
 
 fn gen_int(mut rng: Xoshiro256) -> Int:
-    return ArbitraryInt.arbitrary(rng)
+    return FuzzableInt.generate(rng)
 
 
-fn shrink_int(v: Int) -> List[Int]:
-    return ArbitraryInt.shrink(v)
+fn minimize_int(v: Int) -> List[Int]:
+    return FuzzableInt.minimize(v)
 
 
 # ── Tests ─────────────────────────────────────────────────────────────────────
@@ -85,7 +85,7 @@ fn shrink_int(v: Int) -> List[Int]:
 def test_forall_trivially_true():
     """Forall on an always-true property must not raise."""
     forall[UInt8](
-        uint8_always_in_range, gen_uint8, shrink_uint8, trials=500, seed=1
+        uint8_always_in_range, gen_uint8, minimize_uint8, trials=500, seed=1
     )
 
 
@@ -94,7 +94,7 @@ def test_forall_catches_false():
     var caught = False
     try:
         forall[UInt8](
-            uint8_always_false, gen_uint8, shrink_uint8, trials=100, seed=2
+            uint8_always_false, gen_uint8, minimize_uint8, trials=100, seed=2
         )
     except:
         caught = True
@@ -104,13 +104,13 @@ def test_forall_catches_false():
 def test_forall_uint16_trivial():
     """Forall on a trivially-true UInt16 property must pass."""
     forall[UInt16](
-        uint16_positive_or_zero, gen_uint16, shrink_uint16, trials=1_000, seed=3
+        uint16_positive_or_zero, gen_uint16, minimize_uint16, trials=1_000, seed=3
     )
 
 
 def test_forall_int_trivial():
     """Forall on a simple Int property must pass."""
-    forall[Int](int_abs_nonnegative, gen_int, shrink_int, trials=500, seed=4)
+    forall[Int](int_abs_nonnegative, gen_int, minimize_int, trials=500, seed=4)
 
 
 def test_forall_bytes_trivially_true():
@@ -140,7 +140,7 @@ def test_forall_bytes_catches_unexpected_raise():
 
 def test_forall_zero_trials():
     """Forall with trials=0 must not raise (nothing to test)."""
-    forall[UInt8](uint8_always_false, gen_uint8, shrink_uint8, trials=0, seed=8)
+    forall[UInt8](uint8_always_false, gen_uint8, minimize_uint8, trials=0, seed=8)
 
 
 def test_forall_reproducible():
@@ -149,7 +149,7 @@ def test_forall_reproducible():
     for _ in range(2):
         try:
             forall[UInt8](
-                uint8_always_false, gen_uint8, shrink_uint8, trials=10, seed=42
+                uint8_always_false, gen_uint8, minimize_uint8, trials=10, seed=42
             )
         except e:
             failures.append(String(e))

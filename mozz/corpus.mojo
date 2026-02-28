@@ -99,13 +99,8 @@ struct Corpus(Movable):
                 return
         # Evict oldest if at capacity
         if len(self._seeds) >= MAX_CORPUS_SIZE:
-            var new_seeds = List[List[UInt8]]()
-            var new_hashes = List[UInt64]()
-            for i in range(1, len(self._seeds)):
-                new_seeds.append(self._seeds[i].copy())
-                new_hashes.append(self._hashes[i])
-            self._seeds = new_seeds^
-            self._hashes = new_hashes^
+            _ = self._seeds.pop(0)
+            _ = self._hashes.pop(0)
         self._seeds.append(data.copy())
         self._hashes.append(h)
 

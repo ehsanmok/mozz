@@ -4,10 +4,10 @@ Demonstrates Level 2 API: express mathematical properties and let mozz
 find counterexamples automatically.
 
 Run:
-    pixi run example-2
+    pixi run example-property-test
 """
 
-from mozz import forall, forall_bytes, ArbitraryUInt16, ArbitraryUInt8
+from mozz import forall, forall_bytes, FuzzableUInt16, FuzzableUInt8
 from mozz.rng import Xoshiro256
 
 
@@ -53,23 +53,23 @@ fn byte_division_safe(v: UInt8) raises -> Bool:
     return Int(v) // Int(v) == 1
 
 
-# ── Generator / shrinker helpers ──────────────────────────────────────────────
+# ── Generator / minimizer helpers ─────────────────────────────────────────────
 
 
 fn gen_u16(mut rng: Xoshiro256) -> UInt16:
-    return ArbitraryUInt16.arbitrary(rng)
+    return FuzzableUInt16.generate(rng)
 
 
-fn shrink_u16(v: UInt16) -> List[UInt16]:
-    return ArbitraryUInt16.shrink(v)
+fn minimize_u16(v: UInt16) -> List[UInt16]:
+    return FuzzableUInt16.minimize(v)
 
 
 fn gen_u8(mut rng: Xoshiro256) -> UInt8:
-    return ArbitraryUInt8.arbitrary(rng)
+    return FuzzableUInt8.generate(rng)
 
 
-fn shrink_u8(v: UInt8) -> List[UInt8]:
-    return ArbitraryUInt8.shrink(v)
+fn minimize_u8(v: UInt8) -> List[UInt8]:
+    return FuzzableUInt8.minimize(v)
 
 
 # ── Main ──────────────────────────────────────────────────────────────────────
@@ -87,12 +87,12 @@ fn main() raises:
 
     print("2. Testing UInt16 addition fits in UInt32 (5 000 trials)...")
     forall[UInt16](
-        uint16_sum_fits_in_u32, gen_u16, shrink_u16, trials=5_000, seed=2
+        uint16_sum_fits_in_u32, gen_u16, minimize_u16, trials=5_000, seed=2
     )
     print("   PASS: UInt16 + UInt16 always fits in UInt32\n")
 
     print("3. Testing non-zero byte / itself == 1 (2 000 trials)...")
-    forall[UInt8](byte_division_safe, gen_u8, shrink_u8, trials=2_000, seed=3)
+    forall[UInt8](byte_division_safe, gen_u8, minimize_u8, trials=2_000, seed=3)
     print("   PASS: non-zero byte / itself == 1\n")
 
     print("All properties hold!")

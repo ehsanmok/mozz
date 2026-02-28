@@ -6,18 +6,18 @@ post-crash workflows:
 
 1. **List** — enumerate every crash file in a crash directory.
 2. **Replay** — feed one file back through the target to reproduce the error.
-3. **Minimise** — use ``shrink_bytes`` to reduce the crashing input to its
+3. **Minimise** — use ``minimize_bytes`` to reduce the crashing input to its
    smallest form before filing a bug report.
 
 Usage (after a fuzz run that produced crashes):
 
-    mojo -I .. examples/04_replay_crash.mojo
+    pixi run example-replay
 
 The example uses the same toy ``crasher`` target from ``test_runner.mojo``
 so it works without any external harness.
 """
 
-from mozz import fuzz, FuzzConfig, Corpus, shrink_bytes
+from mozz import fuzz, FuzzConfig, Corpus, minimize_bytes
 
 
 # ── Toy target (same as in test_runner.mojo) ──────────────────────────────────
@@ -112,10 +112,10 @@ fn main() raises:
     except e:
         print("  ✓ crash reproduced:", String(e))
 
-    # ── Step 3: minimise the crash input ──────────────────────────────────────
-    print("\n── step 3: minimise the crash input ─────────────────────────────")
+    # ── Step 3: minimize the crash input ──────────────────────────────────────
+    print("\n── step 3: minimize the crash input ─────────────────────────────")
     print("  original:", len(crash_input), "bytes:", _hex(crash_input))
-    var minimal = shrink_bytes(crash_input, is_crash)
+    var minimal = minimize_bytes(crash_input, is_crash)
     print("  minimal: ", len(minimal), "bytes:", _hex(minimal))
     print(
         "  reduced by",
