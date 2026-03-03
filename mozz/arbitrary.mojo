@@ -502,8 +502,7 @@ struct Gen[T: ImplicitlyCopyable & Movable]:
         Returns:
             A pseudo-random value of type ``T``.
         """
-        @parameter
-        if _type_is_eq[Self.T, Bool]():
+        comptime if _type_is_eq[Self.T, Bool]():
             return rebind[Self.T](FuzzableBool.generate(rng))
         elif _type_is_eq[Self.T, UInt8]():
             return rebind[Self.T](FuzzableUInt8.generate(rng))
@@ -518,7 +517,8 @@ struct Gen[T: ImplicitlyCopyable & Movable]:
         elif _type_is_eq[Self.T, String]():
             return rebind[Self.T](FuzzableString.generate(rng))
         else:
-            constrained[False, "Gen[T]: unsupported T; write a FuzzableXXX helper"]()
+            comptime assert(False, "Gen[T]: unsupported T; write a FuzzableXXX helper")
+            return UnsafePointer[Self.T].alloc(1).take_pointee()
 
     @staticmethod
     fn minimize(value: Self.T) -> List[Self.T]:
@@ -530,8 +530,7 @@ struct Gen[T: ImplicitlyCopyable & Movable]:
         Returns:
             A list of simpler variants (may be empty).
         """
-        @parameter
-        if _type_is_eq[Self.T, Bool]():
+        comptime if _type_is_eq[Self.T, Bool]():
             var r = FuzzableBool.minimize(rebind[Bool](value))
             return rebind_var[List[Self.T]](r^)
         elif _type_is_eq[Self.T, UInt8]():
@@ -553,5 +552,5 @@ struct Gen[T: ImplicitlyCopyable & Movable]:
             var r = FuzzableString.minimize(rebind[String](value))
             return rebind_var[List[Self.T]](r^)
         else:
-            constrained[False, "Gen[T]: unsupported T; write a FuzzableXXX helper"]()
+            comptime assert(False, "Gen[T]: unsupported T; write a FuzzableXXX helper")
             return List[Self.T]()
