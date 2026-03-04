@@ -517,7 +517,7 @@ struct Gen[T: ImplicitlyCopyable & Movable]:
         elif _type_is_eq[Self.T, String]():
             return rebind[Self.T](FuzzableString.generate(rng))
         else:
-            comptime assert(False, "Gen[T]: unsupported T; write a FuzzableXXX helper")
+            comptime assert False, "Gen[T]: unsupported T; write a FuzzableXXX helper"
             return UnsafePointer[Self.T].alloc(1).take_pointee()
 
     @staticmethod
@@ -552,5 +552,5 @@ struct Gen[T: ImplicitlyCopyable & Movable]:
             var r = FuzzableString.minimize(rebind[String](value))
             return rebind_var[List[Self.T]](r^)
         else:
-            comptime assert(False, "Gen[T]: unsupported T; write a FuzzableXXX helper")
+            comptime assert False, "Gen[T]: unsupported T; write a FuzzableXXX helper"
             return List[Self.T]()
