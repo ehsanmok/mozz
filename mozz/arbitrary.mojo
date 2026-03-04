@@ -34,6 +34,7 @@ Custom types:
 """
 
 from collections import InlineArray
+from memory import alloc
 from sys.intrinsics import _type_is_eq
 
 from .rng import Xoshiro256
@@ -518,7 +519,7 @@ struct Gen[T: ImplicitlyCopyable & Movable]:
             return rebind[Self.T](FuzzableString.generate(rng))
         else:
             comptime assert False, "Gen[T]: unsupported T; write a FuzzableXXX helper"
-            return UnsafePointer[Self.T].alloc(1).take_pointee()
+        return alloc[Self.T](1)[]
 
     @staticmethod
     fn minimize(value: Self.T) -> List[Self.T]:
