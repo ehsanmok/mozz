@@ -114,20 +114,20 @@ fn minimize_color(c: Color) -> List[Color]:
 # ── Properties ────────────────────────────────────────────────────────────────
 
 
-fn double_invert_is_identity(c: Color) raises -> Bool:
+def double_invert_is_identity(c: Color) raises -> Bool:
     """Property: invert(invert(c)) == c for all colours."""
     var once = c.invert()
     var twice = once.invert()
     return twice.r == c.r and twice.g == c.g and twice.b == c.b
 
 
-fn luminance_in_range(c: Color) raises -> Bool:
+def luminance_in_range(c: Color) raises -> Bool:
     """Property: luminance is always in [0, 255]."""
     var lum = c.luminance()
     return lum >= 0.0 and lum <= 255.0
 
 
-fn invert_changes_colour(c: Color) raises -> Bool:
+def invert_changes_colour(c: Color) raises -> Bool:
     """Property: inverted colour differs from original.
 
     Note: 255 - channel == channel would require channel == 127.5, impossible
@@ -140,7 +140,7 @@ fn invert_changes_colour(c: Color) raises -> Bool:
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 
-fn main() raises:
+def main() raises:
     print("=== Example 3: Custom Fuzzable ===\n")
 
     print("1. Testing double-invert identity over 3 000 random colours...")

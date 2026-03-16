@@ -14,7 +14,7 @@ from mozz.rng import Xoshiro256
 # ── Raw-byte property ─────────────────────────────────────────────────────────
 
 
-fn encode_decode_roundtrip(data: List[UInt8]) raises -> Bool:
+def encode_decode_roundtrip(data: List[UInt8]) raises -> Bool:
     """Property: our trivial encoder/decoder round-trips any input.
 
     Encoder: XOR every byte with 0xAA (its own inverse).
@@ -41,12 +41,12 @@ fn encode_decode_roundtrip(data: List[UInt8]) raises -> Bool:
 # ── Typed properties ──────────────────────────────────────────────────────────
 
 
-fn uint16_sum_fits_in_u32(v: UInt16) raises -> Bool:
+def uint16_sum_fits_in_u32(v: UInt16) raises -> Bool:
     """Property: UInt16 + UInt16 never exceeds UInt32 max."""
     return UInt32(v) + UInt32(v) <= UInt32(0xFFFFFFFF)
 
 
-fn byte_division_safe(v: UInt8) raises -> Bool:
+def byte_division_safe(v: UInt8) raises -> Bool:
     """Property: non-zero byte divided by itself equals 1."""
     if v == 0:
         return True  # skip zero — division by zero is undefined
@@ -75,7 +75,7 @@ fn minimize_u8(v: UInt8) -> List[UInt8]:
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 
-fn main() raises:
+def main() raises:
     print("=== Example 2: Property-based testing ===\n")
 
     print(

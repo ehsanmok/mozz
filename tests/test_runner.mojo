@@ -11,7 +11,7 @@ from mozz.runner import fuzz, FuzzConfig, _is_crash
 # ── Toy parsers (no test_ prefix, excluded from discovery) ───────────────────
 
 
-fn safe_parser(data: List[UInt8]) raises:
+def safe_parser(data: List[UInt8]) raises:
     """Always rejects gracefully — never panics."""
     if len(data) == 0:
         return
@@ -21,18 +21,18 @@ fn safe_parser(data: List[UInt8]) raises:
         raise Error("input too long")
 
 
-fn always_ok(data: List[UInt8]) raises:
+def always_ok(data: List[UInt8]) raises:
     """Accepts every input without error."""
     _ = data
 
 
-fn crasher(data: List[UInt8]) raises:
+def crasher(data: List[UInt8]) raises:
     """Simulates an assertion failure on input [0x00, 0xFF, ...]."""
     if len(data) >= 2 and data[0] == 0x00 and data[1] == 0xFF:
         raise Error("assertion failed: unexpected header")
 
 
-fn panic_on_empty(data: List[UInt8]) raises:
+def panic_on_empty(data: List[UInt8]) raises:
     """Raises 'index out of bounds' for empty input."""
     if len(data) == 0:
         raise Error("index out of bounds: empty input")
@@ -41,7 +41,7 @@ fn panic_on_empty(data: List[UInt8]) raises:
 # ── Tests ─────────────────────────────────────────────────────────────────────
 
 
-def test_is_crash_classification():
+def test_is_crash_classification() raises:
     """_is_crash must correctly classify known crash markers."""
     assert_true(_is_crash("assertion failed: bad state"))
     assert_true(_is_crash("index out of bounds: len=0"))
@@ -54,7 +54,7 @@ def test_is_crash_classification():
     assert_false(_is_crash(""))
 
 
-def test_runner_no_crash_safe_parser():
+def test_runner_no_crash_safe_parser() raises:
     """Calling fuzz() must not raise when the target never crashes."""
     fuzz(
         safe_parser,
@@ -67,7 +67,7 @@ def test_runner_no_crash_safe_parser():
     )
 
 
-def test_runner_no_crash_always_ok():
+def test_runner_no_crash_always_ok() raises:
     """Calling fuzz() on a target that accepts everything must not raise."""
     fuzz(
         always_ok,
@@ -80,7 +80,7 @@ def test_runner_no_crash_always_ok():
     )
 
 
-def test_runner_finds_crash():
+def test_runner_finds_crash() raises:
     """Calling fuzz() must find the crash in 'crasher' within 50k runs."""
     var found = False
     var seeds = List[List[UInt8]]()
@@ -104,7 +104,7 @@ def test_runner_finds_crash():
     assert_true(found)
 
 
-def test_runner_finds_panic_empty():
+def test_runner_finds_panic_empty() raises:
     """Calling fuzz() must find the empty-input bug in 'panic_on_empty'."""
     var found = False
     try:
@@ -124,7 +124,7 @@ def test_runner_finds_panic_empty():
     assert_true(found)
 
 
-def test_fuzz_config_defaults():
+def test_fuzz_config_defaults() raises:
     """FuzzConfig() default values must match the specification."""
     var cfg = FuzzConfig()
     assert_equal(cfg.max_runs, 100_000)
@@ -135,7 +135,7 @@ def test_fuzz_config_defaults():
     assert_equal(cfg.timeout_ms, 0)
 
 
-def test_fuzz_config_custom():
+def test_fuzz_config_custom() raises:
     """FuzzConfig with custom values must store them correctly."""
     var cfg = FuzzConfig(
         max_runs=500,
@@ -153,7 +153,7 @@ def test_fuzz_config_custom():
     assert_equal(cfg.max_input_len, 1024)
 
 
-def test_runner_user_seeds():
+def test_runner_user_seeds() raises:
     """Extra seeds passed to fuzz() must be used without crashing."""
     var seeds = List[List[UInt8]]()
     var s1: List[UInt8] = [0x48, 0x54, 0x54, 0x50]  # "HTTP"
@@ -172,7 +172,7 @@ def test_runner_user_seeds():
     )
 
 
-def main():
+def main() raises:
     print("=" * 60)
     print("test_runner.mojo")
     print("=" * 60)

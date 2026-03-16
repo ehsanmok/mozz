@@ -106,7 +106,7 @@ fn _fill_measures(size: Int) -> List[ThroughputMeasure]:
     return m^
 
 
-fn main() raises:
+def main() raises:
     print("=" * 60)
     print("mozz benchmark")
     print("=" * 60)
@@ -123,10 +123,10 @@ fn main() raises:
 
     @parameter
     @always_inline
-    fn bench_scalar_64(mut b: Bencher) raises capturing:
+    def bench_scalar_64(mut b: Bencher) capturing:
         @parameter
         @always_inline
-        fn call_fn() raises:
+        def call_fn() raises:
             _fill_scalar(rng_s64, buf_s64)
             clobber_memory()
 
@@ -134,10 +134,10 @@ fn main() raises:
 
     @parameter
     @always_inline
-    fn bench_simd_64(mut b: Bencher) raises capturing:
+    def bench_simd_64(mut b: Bencher) capturing:
         @parameter
         @always_inline
-        fn call_fn() raises:
+        def call_fn() raises:
             _fill_simd(rng_v64, buf_v64)
             clobber_memory()
 
@@ -155,10 +155,10 @@ fn main() raises:
 
     @parameter
     @always_inline
-    fn bench_scalar_1k(mut b: Bencher) raises capturing:
+    def bench_scalar_1k(mut b: Bencher) capturing:
         @parameter
         @always_inline
-        fn call_fn() raises:
+        def call_fn() raises:
             _fill_scalar(rng_s1k, buf_s1k)
             clobber_memory()
 
@@ -166,10 +166,10 @@ fn main() raises:
 
     @parameter
     @always_inline
-    fn bench_simd_1k(mut b: Bencher) raises capturing:
+    def bench_simd_1k(mut b: Bencher) capturing:
         @parameter
         @always_inline
-        fn call_fn() raises:
+        def call_fn() raises:
             _fill_simd(rng_v1k, buf_v1k)
             clobber_memory()
 
@@ -187,10 +187,10 @@ fn main() raises:
 
     @parameter
     @always_inline
-    fn bench_scalar_16k(mut b: Bencher) raises capturing:
+    def bench_scalar_16k(mut b: Bencher) capturing:
         @parameter
         @always_inline
-        fn call_fn() raises:
+        def call_fn() raises:
             _fill_scalar(rng_s16k, buf_s16k)
             clobber_memory()
 
@@ -198,10 +198,10 @@ fn main() raises:
 
     @parameter
     @always_inline
-    fn bench_simd_16k(mut b: Bencher) raises capturing:
+    def bench_simd_16k(mut b: Bencher) capturing:
         @parameter
         @always_inline
-        fn call_fn() raises:
+        def call_fn() raises:
             _fill_simd(rng_v16k, buf_v16k)
             clobber_memory()
 
@@ -219,12 +219,12 @@ fn main() raises:
 
     @parameter
     @always_inline
-    fn bench_mutate(mut b: Bencher) raises capturing:
+    def bench_mutate(mut b: Bencher) capturing:
         @parameter
         @always_inline
-        fn call_fn() raises:
+        def call_fn() raises:
             var seed = corpus.pick(rng_m)
-            var out = mutator.mutate(Span[UInt8](seed), rng_m)
+            var out = mutator.mutate(Span[UInt8, _](seed), rng_m)
             keep(out)
 
         b.iter[call_fn]()

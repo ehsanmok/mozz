@@ -14,13 +14,13 @@ from mozz.rng import Xoshiro256
 from mozz.corpus import Corpus, MAX_CORPUS_SIZE, _fnv1a64
 
 
-def test_default_has_four_seeds():
+def test_default_has_four_seeds() raises:
     """Corpus.default() must contain exactly 4 seeds."""
     var c = Corpus.default()
     assert_equal(c.size(), 4)
 
 
-def test_add_new_seed():
+def test_add_new_seed() raises:
     """Adding a new seed must increase size by 1."""
     var c = Corpus.default()
     var before = c.size()
@@ -29,7 +29,7 @@ def test_add_new_seed():
     assert_equal(c.size(), before + 1)
 
 
-def test_dedup():
+def test_dedup() raises:
     """Adding an identical seed twice must not grow the corpus."""
     var c = Corpus.default()
     var seed: List[UInt8] = [0xDE, 0xAD, 0xBE, 0xEF]
@@ -39,7 +39,7 @@ def test_dedup():
     assert_equal(c.size(), after_first)
 
 
-def test_dedup_empty():
+def test_dedup_empty() raises:
     """Default corpus already has an empty seed; adding [] again is a noop."""
     var c = Corpus.default()
     var before = c.size()
@@ -47,7 +47,7 @@ def test_dedup_empty():
     assert_equal(c.size(), before)
 
 
-def test_pick_in_range():
+def test_pick_in_range() raises:
     """Returned seed from pick() must be one that was added."""
     var c = Corpus(List[List[UInt8]]())
     var s1: List[UInt8] = [0xAA]
@@ -64,14 +64,14 @@ def test_pick_in_range():
         assert_true(v == 0xAA or v == 0xBB or v == 0xCC)
 
 
-def test_pick_empty_corpus():
+def test_pick_empty_corpus() raises:
     """Calling pick() on an empty corpus must return an empty list."""
     var c = Corpus(List[List[UInt8]]())
     var rng = Xoshiro256(seed=1)
     assert_equal(len(c.pick(rng)), 0)
 
 
-def test_max_size_eviction():
+def test_max_size_eviction() raises:
     """Adding beyond MAX_CORPUS_SIZE must evict the oldest entry."""
     var c = Corpus(List[List[UInt8]]())
     for i in range(MAX_CORPUS_SIZE):
@@ -83,26 +83,26 @@ def test_max_size_eviction():
     assert_equal(c.size(), MAX_CORPUS_SIZE)
 
 
-def test_fnv1a_different_inputs():
+def test_fnv1a_different_inputs() raises:
     """FNV-1a must return different hashes for different inputs."""
     var d1: List[UInt8] = [0x01]
     var d2: List[UInt8] = [0x02]
     var d3 = List[UInt8]()
-    var a = _fnv1a64(Span[UInt8](d1))
-    var b = _fnv1a64(Span[UInt8](d2))
-    var empty = _fnv1a64(Span[UInt8](d3))
+    var a = _fnv1a64(Span[UInt8, _](d1))
+    var b = _fnv1a64(Span[UInt8, _](d2))
+    var empty = _fnv1a64(Span[UInt8, _](d3))
     assert_not_equal(a, b)
     assert_not_equal(a, empty)
     assert_not_equal(b, empty)
 
 
-def test_fnv1a_same_input():
+def test_fnv1a_same_input() raises:
     """FNV-1a must return the same hash for the same input."""
     var data: List[UInt8] = [0x48, 0x65, 0x6C, 0x6C, 0x6F]
-    assert_equal(_fnv1a64(Span[UInt8](data)), _fnv1a64(Span[UInt8](data)))
+    assert_equal(_fnv1a64(Span[UInt8, _](data)), _fnv1a64(Span[UInt8, _](data)))
 
 
-def test_pick_covers_all_seeds():
+def test_pick_covers_all_seeds() raises:
     """Repeated pick() calls must eventually cover every seed in a small corpus.
     """
     var c = Corpus(List[List[UInt8]]())
@@ -128,7 +128,7 @@ def test_pick_covers_all_seeds():
     assert_true(seen0 and seen1 and seen2)
 
 
-def test_constructor_from_list():
+def test_constructor_from_list() raises:
     """Corpus(seeds) constructor must accept and deduplicate seeds."""
     var seeds = List[List[UInt8]]()
     var s1: List[UInt8] = [0x01]
@@ -141,7 +141,7 @@ def test_constructor_from_list():
     assert_equal(c.size(), 2)
 
 
-def main():
+def main() raises:
     print("=" * 60)
     print("test_corpus.mojo")
     print("=" * 60)

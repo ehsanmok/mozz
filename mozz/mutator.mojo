@@ -1,7 +1,7 @@
 """Byte-level mutation operators for fuzzing.
 
 Seven shipped mutators plus a weighted ``MutatorChain`` that picks one at
-random.  All mutators take a ``Span[UInt8]`` input and return a new
+random.  All mutators take a ``Span[UInt8, _]`` input and return a new
 ``List[UInt8]`` — they never mutate in place.
 
 Use ``default_mutator()`` to get the standard weighted chain used by
@@ -12,7 +12,7 @@ Example:
     var rng = Xoshiro256(seed=1)
     var chain = default_mutator()
     var input = List[UInt8](0x48, 0x65, 0x6C, 0x6C, 0x6F)  # "Hello"
-    var mutated = chain.mutate(Span[UInt8](input), rng)
+    var mutated = chain.mutate(Span[UInt8, _](input), rng)
     ```
 """
 
@@ -69,7 +69,7 @@ struct BitFlip:
         """Create a BitFlip mutator."""
         pass
 
-    fn mutate(self, input: Span[UInt8], mut rng: Xoshiro256) -> List[UInt8]:
+    fn mutate(self, input: Span[UInt8, _], mut rng: Xoshiro256) -> List[UInt8]:
         """Flip 1–4 random bits in a copy of ``input``.
 
         Args:
@@ -79,7 +79,7 @@ struct BitFlip:
         Returns:
             A new ``List[UInt8]`` with bits flipped.
         """
-        var out = List[UInt8](Span[UInt8](input))
+        var out = List[UInt8](Span[UInt8, _](input))
         var n = len(out)
         if n == 0:
             return out^
@@ -102,7 +102,7 @@ struct ByteSubstitution:
         """Create a ByteSubstitution mutator."""
         pass
 
-    fn mutate(self, input: Span[UInt8], mut rng: Xoshiro256) -> List[UInt8]:
+    fn mutate(self, input: Span[UInt8, _], mut rng: Xoshiro256) -> List[UInt8]:
         """Replace 1–4 bytes with random or boundary values.
 
         Args:
@@ -112,7 +112,7 @@ struct ByteSubstitution:
         Returns:
             A new ``List[UInt8]`` with substituted bytes.
         """
-        var out = List[UInt8](Span[UInt8](input))
+        var out = List[UInt8](Span[UInt8, _](input))
         var n = len(out)
         if n == 0:
             return out^
@@ -138,7 +138,7 @@ struct ByteInsertion:
         """Create a ByteInsertion mutator."""
         pass
 
-    fn mutate(self, input: Span[UInt8], mut rng: Xoshiro256) -> List[UInt8]:
+    fn mutate(self, input: Span[UInt8, _], mut rng: Xoshiro256) -> List[UInt8]:
         """Insert 1–8 random bytes at a random position.
 
         Args:
@@ -171,7 +171,7 @@ struct ByteDeletion:
         """Create a ByteDeletion mutator."""
         pass
 
-    fn mutate(self, input: Span[UInt8], mut rng: Xoshiro256) -> List[UInt8]:
+    fn mutate(self, input: Span[UInt8, _], mut rng: Xoshiro256) -> List[UInt8]:
         """Delete 1–8 bytes starting at a random position.
 
         Args:
@@ -206,7 +206,7 @@ struct BlockDuplication:
         """Create a BlockDuplication mutator."""
         pass
 
-    fn mutate(self, input: Span[UInt8], mut rng: Xoshiro256) -> List[UInt8]:
+    fn mutate(self, input: Span[UInt8, _], mut rng: Xoshiro256) -> List[UInt8]:
         """Copy a random block and insert it at a random position.
 
         Args:
@@ -251,7 +251,7 @@ struct Splice:
         """
         self._corpus_ref = corpus.copy()
 
-    fn mutate(self, input: Span[UInt8], mut rng: Xoshiro256) -> List[UInt8]:
+    fn mutate(self, input: Span[UInt8, _], mut rng: Xoshiro256) -> List[UInt8]:
         """Splice a random corpus entry onto the first half of ``input``.
 
         Args:
@@ -289,7 +289,7 @@ struct BoundaryInt:
         """Create a BoundaryInt mutator."""
         pass
 
-    fn mutate(self, input: Span[UInt8], mut rng: Xoshiro256) -> List[UInt8]:
+    fn mutate(self, input: Span[UInt8, _], mut rng: Xoshiro256) -> List[UInt8]:
         """Replace 1 or 2 bytes at a random position with a boundary value.
 
         Args:
@@ -299,7 +299,7 @@ struct BoundaryInt:
         Returns:
             A new ``List[UInt8]`` with a boundary value substituted.
         """
-        var out = List[UInt8](Span[UInt8](input))
+        var out = List[UInt8](Span[UInt8, _](input))
         var n = len(out)
         if n == 0:
             return out^
@@ -331,7 +331,7 @@ struct MutatorChain:
     Example:
         ```mojo
         var chain = default_mutator()
-        var out = chain.mutate(Span[UInt8](input), rng)
+        var out = chain.mutate(Span[UInt8, _](input), rng)
         ```
     """
 
@@ -369,7 +369,7 @@ struct MutatorChain:
         """
         self._corpus_snapshot = corpus.copy()
 
-    fn mutate(self, input: Span[UInt8], mut rng: Xoshiro256) -> List[UInt8]:
+    fn mutate(self, input: Span[UInt8, _], mut rng: Xoshiro256) -> List[UInt8]:
         """Pick a mutator by weighted random draw and apply it.
 
         Args:

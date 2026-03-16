@@ -386,7 +386,7 @@ struct FuzzableString:
             return out^
         out.append(String(""))
         if n > 1:
-            out.append(String(value[: n // 2]))
+            out.append(String(unsafe_from_utf8=value.as_bytes()[: n // 2]))
         return out^
 
 

@@ -13,39 +13,39 @@ from mozz.property import forall, forall_bytes
 # ── Helper predicates (not test_ prefix, excluded from discovery) ─────────────
 
 
-fn uint8_always_in_range(v: UInt8) raises -> Bool:
+def uint8_always_in_range(v: UInt8) raises -> Bool:
     """Trivially true: UInt8 is always in [0, 255]."""
     return Int(v) >= 0 and Int(v) <= 255
 
 
-fn uint8_always_false(v: UInt8) raises -> Bool:
+def uint8_always_false(v: UInt8) raises -> Bool:
     """Always fails — used to verify forall catches failures."""
     return False
 
 
-fn uint16_positive_or_zero(v: UInt16) raises -> Bool:
+def uint16_positive_or_zero(v: UInt16) raises -> Bool:
     """UInt16 is always >= 0."""
     return UInt32(v) >= 0
 
 
-fn int_abs_nonnegative(v: Int) raises -> Bool:
+def int_abs_nonnegative(v: Int) raises -> Bool:
     """Absolute value is always non-negative."""
     if v >= 0:
         return v >= 0
     return -v >= 0
 
 
-fn bytes_length_nonnegative(data: List[UInt8]) raises -> Bool:
+def bytes_length_nonnegative(data: List[UInt8]) raises -> Bool:
     """Always true: len(data) >= 0 for any input."""
     return len(data) >= 0
 
 
-fn bytes_always_false(data: List[UInt8]) raises -> Bool:
+def bytes_always_false(data: List[UInt8]) raises -> Bool:
     """Always fails — used to verify forall_bytes catches failures."""
     return False
 
 
-fn bytes_raises_on_nonempty(data: List[UInt8]) raises -> Bool:
+def bytes_raises_on_nonempty(data: List[UInt8]) raises -> Bool:
     """Raises an error for non-empty inputs."""
     if len(data) > 0:
         raise Error("unexpected failure")
@@ -82,14 +82,14 @@ fn minimize_int(v: Int) -> List[Int]:
 # ── Tests ─────────────────────────────────────────────────────────────────────
 
 
-def test_forall_trivially_true():
+def test_forall_trivially_true() raises:
     """Forall on an always-true property must not raise."""
     forall[UInt8](
         uint8_always_in_range, gen_uint8, minimize_uint8, trials=500, seed=1
     )
 
 
-def test_forall_catches_false():
+def test_forall_catches_false() raises:
     """Forall must raise when the property returns False."""
     var caught = False
     try:
@@ -101,24 +101,24 @@ def test_forall_catches_false():
     assert_true(caught)
 
 
-def test_forall_uint16_trivial():
+def test_forall_uint16_trivial() raises:
     """Forall on a trivially-true UInt16 property must pass."""
     forall[UInt16](
         uint16_positive_or_zero, gen_uint16, minimize_uint16, trials=1_000, seed=3
     )
 
 
-def test_forall_int_trivial():
+def test_forall_int_trivial() raises:
     """Forall on a simple Int property must pass."""
     forall[Int](int_abs_nonnegative, gen_int, minimize_int, trials=500, seed=4)
 
 
-def test_forall_bytes_trivially_true():
+def test_forall_bytes_trivially_true() raises:
     """Calling forall_bytes on a trivially-true property must not raise."""
     forall_bytes(bytes_length_nonnegative, max_len=256, trials=500, seed=5)
 
 
-def test_forall_bytes_catches_false():
+def test_forall_bytes_catches_false() raises:
     """Calling forall_bytes must raise when the property returns False."""
     var caught = False
     try:
@@ -128,7 +128,7 @@ def test_forall_bytes_catches_false():
     assert_true(caught)
 
 
-def test_forall_bytes_catches_unexpected_raise():
+def test_forall_bytes_catches_unexpected_raise() raises:
     """Calling forall_bytes must catch unexpected raises from the predicate."""
     var caught = False
     try:
@@ -138,12 +138,12 @@ def test_forall_bytes_catches_unexpected_raise():
     assert_true(caught)
 
 
-def test_forall_zero_trials():
+def test_forall_zero_trials() raises:
     """Forall with trials=0 must not raise (nothing to test)."""
     forall[UInt8](uint8_always_false, gen_uint8, minimize_uint8, trials=0, seed=8)
 
 
-def test_forall_reproducible():
+def test_forall_reproducible() raises:
     """The same seed must produce the same failure message on repeated runs."""
     var failures = List[String]()
     for _ in range(2):
@@ -157,7 +157,7 @@ def test_forall_reproducible():
     assert_equal(failures[0], failures[1])
 
 
-def main():
+def main() raises:
     print("=" * 60)
     print("test_property.mojo")
     print("=" * 60)

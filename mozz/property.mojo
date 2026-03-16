@@ -11,7 +11,7 @@ Example:
     from mozz import forall, forall_bytes, FuzzableUInt16
 
     # Property: addition must not overflow past u16 max
-    fn no_wrap(v: UInt16) raises -> Bool:
+    def no_wrap(v: UInt16) raises -> Bool:
         return Int(v) + Int(v) >= Int(v)
 
     fn gen_u16(mut rng: Xoshiro256) -> UInt16:
@@ -23,9 +23,9 @@ Example:
     forall[UInt16](no_wrap, gen_u16, minimize_u16, trials=2000)
 
     # Raw bytes: decode_one never over-reads
-    fn safe_decode(data: List[UInt8]) raises -> Bool:
+    def safe_decode(data: List[UInt8]) raises -> Bool:
         try:
-            var r = WsFrame.decode_one(Span[UInt8](data))
+            var r = WsFrame.decode_one(Span[UInt8, _](data))
             return r.consumed <= len(data)
         except:
             return True
@@ -37,7 +37,7 @@ Example:
 from .rng import Xoshiro256
 
 
-fn forall[
+def forall[
     T: ImplicitlyCopyable & Movable
 ](
     prop: fn (T) raises -> Bool,
@@ -81,7 +81,7 @@ fn forall[
             fail_msg = String(e)
 
         if failed:
-            # Minimize the counterexample by iterating minimize_fn until no
+            # Minimize the counterexample by iterating minimize_def until no
             # simpler candidate still fails.
             var current = value
             var steps = 0
@@ -108,7 +108,7 @@ fn forall[
             raise Error("mozz: property failed -- " + fail_msg + minimize_note)
 
 
-fn forall_bytes(
+def forall_bytes(
     prop: fn(List[UInt8]) raises -> Bool,
     max_len: Int = 1_024,
     trials: Int = 1_000,
@@ -164,7 +164,7 @@ fn forall_bytes(
 # ── Internal helpers ──────────────────────────────────────────────────────────
 
 
-fn _ddmin(
+def _ddmin(
     input: List[UInt8],
     prop: fn(List[UInt8]) raises -> Bool,
 ) -> List[UInt8]:

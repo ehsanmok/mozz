@@ -10,7 +10,7 @@ Example:
     var corpus = Corpus.default()
     var seed_bytes: List[UInt8] = [0x01, 0x02, 0x03]
     corpus.add(seed_bytes)
-    var seed = corpus.pick(rng)   # Span[UInt8] borrow
+    var seed = corpus.pick(rng)   # Span[UInt8, _] borrow
     print(corpus.size())
     ```
 """
@@ -20,7 +20,7 @@ from .rng import Xoshiro256
 comptime MAX_CORPUS_SIZE: Int = 10_000
 
 
-fn _fnv1a64(data: Span[UInt8]) -> UInt64:
+fn _fnv1a64(data: Span[UInt8, _]) -> UInt64:
     """FNV-1a 64-bit hash of ``data``.
 
     Args:
@@ -92,7 +92,7 @@ struct Corpus(Movable):
         Args:
             data: Seed to insert.
         """
-        var h = _fnv1a64(Span[UInt8](data))
+        var h = _fnv1a64(Span[UInt8, _](data))
         # Dedup check
         for i in range(len(self._hashes)):
             if self._hashes[i] == h:
@@ -155,7 +155,7 @@ struct Corpus(Movable):
         return self._seeds[i].copy()
 
     @staticmethod
-    fn load(dir: String) raises -> Corpus:
+    def load(dir: String) raises -> Corpus:
         """Load all ``*.bin`` files from ``dir`` as seeds.
 
         Files are read in arbitrary order.  Invalid or empty files are
@@ -182,7 +182,7 @@ struct Corpus(Movable):
         return Corpus(seeds^)
 
     @staticmethod
-    fn list_crashes(crash_dir: String) raises -> List[String]:
+    def list_crashes(crash_dir: String) raises -> List[String]:
         """Return sorted paths of all crash inputs in ``crash_dir``.
 
         Args:
@@ -199,7 +199,7 @@ struct Corpus(Movable):
         return _list_bin_files(crash_dir)
 
     @staticmethod
-    fn load_crash(path: String) raises -> List[UInt8]:
+    def load_crash(path: String) raises -> List[UInt8]:
         """Read a single crash input from ``path``.
 
         Convenience wrapper around file I/O for use in replay harnesses.
@@ -215,7 +215,7 @@ struct Corpus(Movable):
         """
         return _read_file(path)
 
-    fn save(self, dir: String) raises:
+    def save(self, dir: String) raises:
         """Save all corpus seeds to ``dir`` as ``seed_NNNN.bin`` files.
 
         Existing files are not overwritten (new files get the next
@@ -253,7 +253,7 @@ fn _zero_pad(n: Int, width: Int) -> String:
     return s
 
 
-fn _validate_shell_path(path: String) raises:
+def _validate_shell_path(path: String) raises:
     """Raise if ``path`` contains characters unsafe for shell single-quoting.
 
     Single quotes are used to wrap paths in shell commands (``'path'``).
@@ -273,7 +273,7 @@ fn _validate_shell_path(path: String) raises:
         )
 
 
-fn _mkdir(path: String) raises:
+def _mkdir(path: String) raises:
     """Create ``path`` directory (and parents) if it does not exist.
 
     Args:
@@ -304,7 +304,7 @@ fn _run_shell(cmd: String) -> Int:
         return 1
 
 
-fn _read_file(path: String) raises -> List[UInt8]:
+def _read_file(path: String) raises -> List[UInt8]:
     """Read the entire contents of a binary file.
 
     Args:
@@ -320,7 +320,7 @@ fn _read_file(path: String) raises -> List[UInt8]:
         return f.read_bytes()
 
 
-fn _write_file(path: String, data: List[UInt8]) raises:
+def _write_file(path: String, data: List[UInt8]) raises:
     """Write ``data`` bytes to a binary file (creates or truncates).
 
     Args:
@@ -334,7 +334,7 @@ fn _write_file(path: String, data: List[UInt8]) raises:
         _ = f.write_bytes(data)
 
 
-fn _list_bin_files(dir: String) raises -> List[String]:
+def _list_bin_files(dir: String) raises -> List[String]:
     """Return a list of ``*.bin`` file paths in ``dir``.
 
     Uses the platform ``ls`` command.  Returns an empty list if the
@@ -353,7 +353,7 @@ fn _list_bin_files(dir: String) raises -> List[String]:
     var paths = List[String]()
     var tmp = (
         "/tmp/mozz_ls_"
-        + String(Int(_fnv1a64(Span[UInt8](dir.as_bytes()))))
+        + String(Int(_fnv1a64(Span[UInt8, _](dir.as_bytes()))))
         + ".txt"
     )
 

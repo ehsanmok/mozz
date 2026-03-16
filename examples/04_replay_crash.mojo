@@ -22,7 +22,7 @@ from mozz import fuzz, FuzzConfig, Corpus, minimize_bytes
 
 # ── Toy target (same as in test_runner.mojo) ──────────────────────────────────
 
-fn crasher(data: List[UInt8]) raises:
+def crasher(data: List[UInt8]) raises:
     """Crashes when both 0x00 and 0xFF appear anywhere in the input."""
     var has_zero = False
     var has_ff = False
@@ -35,7 +35,7 @@ fn crasher(data: List[UInt8]) raises:
         raise Error("panic: found both 0x00 and 0xFF")
 
 
-fn is_crash(data: List[UInt8]) raises -> Bool:
+def is_crash(data: List[UInt8]) raises -> Bool:
     """Return True if ``data`` triggers the crash in ``crasher``."""
     try:
         crasher(data)
@@ -58,7 +58,7 @@ fn _hex(data: List[UInt8]) -> String:
 
 # ── Main ─────────────────────────────────────────────────────────────────────
 
-fn main() raises:
+def main() raises:
     var crash_dir = ".mozz_crashes/replay_demo"
 
     # ── Step 0: produce a few crashes so the demo has something to replay ──────

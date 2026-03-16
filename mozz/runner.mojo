@@ -8,10 +8,10 @@ Example:
     ```mojo
     from mozz import fuzz, FuzzConfig
 
-    fn target(data: List[UInt8]) raises:
+    def target(data: List[UInt8]) raises:
         _ = some_parser(data)   # must raise on bad input, not panic
 
-    fn main() raises:
+    def main() raises:
         fuzz(target, FuzzConfig(max_runs=100_000, seed=42))
     ```
 """
@@ -112,7 +112,7 @@ struct _Stats:
         self.corpus_grows = 0
 
 
-fn fuzz(
+def fuzz(
     target: FuzzTarget,
     config: FuzzConfig = FuzzConfig(),
     seeds: List[List[UInt8]] = List[List[UInt8]](),
@@ -171,7 +171,7 @@ fn fuzz(
             mutator.update_corpus(corpus._seeds)
 
         var seed_bytes = corpus.pick(rng)
-        var mutated = mutator.mutate(Span[UInt8](seed_bytes), rng)
+        var mutated = mutator.mutate(Span[UInt8, _](seed_bytes), rng)
 
         # Truncate to max_input_len
         if len(mutated) > config.max_input_len:
@@ -199,7 +199,7 @@ fn fuzz(
             if _is_crash(msg):
                 stats.crashes += 1
                 # Only save the crash if we haven't seen this exact input before
-                var ch = _fnv1a64(Span[UInt8](mutated))
+                var ch = _fnv1a64(Span[UInt8, _](mutated))
                 var is_new_crash = True
                 for i in range(len(seen_crash_hashes)):
                     if seen_crash_hashes[i] == ch:

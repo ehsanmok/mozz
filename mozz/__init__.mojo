@@ -26,10 +26,10 @@ simplest case that still triggers the failure.
 ```mojo
 from mozz import fuzz, FuzzConfig
 
-fn target(data: List[UInt8]) raises:
+def target(data: List[UInt8]) raises:
     _ = MyParser.parse(data)  # raises = valid rejection; panic = crash saved to disk
 
-fn main() raises:
+def main() raises:
     fuzz(target, FuzzConfig(max_runs=100_000, seed=42, verbose=True))
 ```
 
@@ -61,10 +61,10 @@ fn gen_u16(mut rng: Xoshiro256) -> UInt16:
 fn minimize_u16(v: UInt16) -> List[UInt16]:
     return Gen[UInt16].minimize(v)
 
-fn no_overflow(v: UInt16) raises -> Bool:
+def no_overflow(v: UInt16) raises -> Bool:
     return Int(v) + 1 > Int(v)
 
-fn main() raises:
+def main() raises:
     forall[UInt16](no_overflow, gen_u16, minimize_u16, trials=5_000, seed=42)
 ```
 
@@ -77,13 +77,13 @@ For custom types write a ``FuzzableMyType`` companion struct.
 ```mojo
 from mozz import forall_bytes
 
-fn safe_roundtrip(data: List[UInt8]) raises -> Bool:
+def safe_roundtrip(data: List[UInt8]) raises -> Bool:
     try:
         return MyCodec.encode(MyCodec.decode(data)) == data
     except:
         return True  # rejections are fine
 
-fn main() raises:
+def main() raises:
     forall_bytes(safe_roundtrip, max_len=512, trials=50_000, seed=1)
 ```
 
@@ -94,7 +94,7 @@ fn main() raises:
 ```mojo
 comptime FuzzTarget = fn(List[UInt8]) raises -> None
 
-fn fuzz(
+def fuzz(
     target: FuzzTarget,
     config: FuzzConfig = FuzzConfig(),
     seeds:  List[List[UInt8]] = List[List[UInt8]](),
@@ -120,7 +120,7 @@ error message).  Seeds are merged into the in-memory corpus before the run.
 ### ``forall[T]()``
 
 ```mojo
-fn forall[T: ImplicitlyCopyable & Movable](
+def forall[T: ImplicitlyCopyable & Movable](
     prop:        fn(T) raises -> Bool,
     gen:         fn(mut Xoshiro256) -> T,
     minimize_fn: fn(T) -> List[T],
@@ -136,7 +136,7 @@ minimized value and step count in the error message.
 ### ``forall_bytes()``
 
 ```mojo
-fn forall_bytes(
+def forall_bytes(
     prop:    fn(List[UInt8]) raises -> Bool,
     max_len: Int    = 1_024,
     trials:  Int    = 1_000,
@@ -150,10 +150,10 @@ Like ``forall[T]`` but generates uniform random byte sequences.  No
 ### ``minimize_bytes()``
 
 ```mojo
-fn minimize_bytes(
+def minimize_bytes(
     input:    List[UInt8],
     is_crash: fn(List[UInt8]) raises -> Bool,
-) raises -> List[UInt8]
+) -> List[UInt8]
 ```
 
 Standalone delta-debugger.  Reduces ``input`` to the smallest byte sequence
@@ -216,11 +216,11 @@ fn gen_color(mut rng: Xoshiro256) -> Color:
 fn minimize_color(c: Color) -> List[Color]:
     return FuzzableColor.minimize(c)
 
-fn prop(c: Color) raises -> Bool:
+def prop(c: Color) raises -> Bool:
     var inv = Color(255 - c.r, 255 - c.g, 255 - c.b)
     return inv.r != c.r or inv.g != c.g or inv.b != c.b
 
-fn main() raises:
+def main() raises:
     forall[Color](prop, gen_color, minimize_color, trials=5_000)
 ```
 
@@ -229,14 +229,14 @@ fn main() raises:
 ```mojo
 from mozz import Corpus, minimize_bytes
 
-fn is_crash(data: List[UInt8]) raises -> Bool:
+def is_crash(data: List[UInt8]) raises -> Bool:
     try:
         my_target(data)
         return False
     except e:
         return String(e).find("panic") >= 0
 
-fn main() raises:
+def main() raises:
     var paths = Corpus.list_crashes(".mozz_crashes")
     var input = Corpus.load_crash(paths[0])
     var minimal = minimize_bytes(input, is_crash)

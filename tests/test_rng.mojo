@@ -13,7 +13,7 @@ from testing import (
 from mozz.rng import Xoshiro256
 
 
-def test_same_seed_same_sequence():
+def test_same_seed_same_sequence() raises:
     """Same seed must produce identical output sequences."""
     var a = Xoshiro256(seed=12345)
     var b = Xoshiro256(seed=12345)
@@ -21,7 +21,7 @@ def test_same_seed_same_sequence():
         assert_equal(a.next_u64(), b.next_u64())
 
 
-def test_different_seeds_different_sequences():
+def test_different_seeds_different_sequences() raises:
     """Different seeds must produce different sequences."""
     var a = Xoshiro256(seed=1)
     var b = Xoshiro256(seed=2)
@@ -33,13 +33,13 @@ def test_different_seeds_different_sequences():
     assert_true(any_diff)
 
 
-def test_zero_seed_produces_nonzero():
+def test_zero_seed_produces_nonzero() raises:
     """Zero seed derives from ASLR heap entropy; output must be non-zero."""
     var a = Xoshiro256(seed=0)
     assert_true(a.next_u64() != 0)
 
 
-def test_next_byte_range():
+def test_next_byte_range() raises:
     """Output of next_byte() must always be in [0, 255]."""
     var rng = Xoshiro256(seed=7)
     for _ in range(10_000):
@@ -47,7 +47,7 @@ def test_next_byte_range():
         assert_true(Int(b) >= 0 and Int(b) <= 255)
 
 
-def test_next_u32_range():
+def test_next_u32_range() raises:
     """Output of next_u32() must always fit in a UInt32."""
     var rng = Xoshiro256(seed=99)
     for _ in range(1_000):
@@ -55,7 +55,7 @@ def test_next_u32_range():
         assert_true(UInt64(v) <= 0xFFFFFFFF)
 
 
-def test_next_below_range():
+def test_next_below_range() raises:
     """Output of next_below(n) must always be in [0, n)."""
     var rng = Xoshiro256(seed=42)
     for n_raw in range(1, 101):
@@ -64,14 +64,14 @@ def test_next_below_range():
             assert_true(rng.next_below(n) < n)
 
 
-def test_next_below_one_returns_zero():
+def test_next_below_one_returns_zero() raises:
     """Calling next_below(1) must always return 0."""
     var rng = Xoshiro256(seed=11)
     for _ in range(200):
         assert_equal(rng.next_below(1), UInt64(0))
 
 
-def test_next_bool_both_values():
+def test_next_bool_both_values() raises:
     """Calling next_bool() must produce both True and False within 100 calls."""
     var rng = Xoshiro256(seed=55)
     var saw_true = False
@@ -85,7 +85,7 @@ def test_next_bool_both_values():
     assert_true(saw_false)
 
 
-def test_fill_length():
+def test_fill_length() raises:
     """Calling fill() must write exactly len(buf) bytes."""
     var rng = Xoshiro256(seed=3)
     var buf = List[UInt8](length=64, fill=UInt8(0))
@@ -93,7 +93,7 @@ def test_fill_length():
     assert_equal(len(buf), 64)
 
 
-def test_fill_changes_bytes():
+def test_fill_changes_bytes() raises:
     """Calling fill() must change at least some bytes in a zero buffer."""
     var rng = Xoshiro256(seed=17)
     var buf = List[UInt8](length=32, fill=UInt8(0))
@@ -106,7 +106,7 @@ def test_fill_changes_bytes():
     assert_true(any_nonzero)
 
 
-def test_fill_reproducible():
+def test_fill_reproducible() raises:
     """Two RNGs with the same seed must produce the same fill() output."""
     var a = Xoshiro256(seed=99)
     var b = Xoshiro256(seed=99)
@@ -118,7 +118,7 @@ def test_fill_reproducible():
         assert_equal(buf_a[i], buf_b[i])
 
 
-def test_state_advances_each_call():
+def test_state_advances_each_call() raises:
     """Consecutive next_u64() calls must return different values."""
     var rng = Xoshiro256(seed=1234)
     var prev = rng.next_u64()
@@ -132,7 +132,7 @@ def test_state_advances_each_call():
     assert_false(all_same)
 
 
-def test_copyable():
+def test_copyable() raises:
     """Copying a Xoshiro256 forks the sequence identically."""
     var orig = Xoshiro256(seed=77)
     _ = orig.next_u64()
@@ -142,7 +142,7 @@ def test_copyable():
         assert_equal(orig.next_u64(), forked.next_u64())
 
 
-def main():
+def main() raises:
     print("=" * 60)
     print("test_rng.mojo")
     print("=" * 60)

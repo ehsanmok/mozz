@@ -11,7 +11,7 @@ Run:
 from mozz import fuzz, FuzzConfig
 
 
-fn toy_parser(data: List[UInt8]) raises:
+def toy_parser(data: List[UInt8]) raises:
     """A small hand-written parser that accepts a trivial TLV encoding.
 
     Format: [type: 1 byte][length: 1 byte][value: length bytes]
@@ -45,7 +45,7 @@ fn toy_parser(data: List[UInt8]) raises:
     # All other types: accepted
 
 
-fn main() raises:
+def main() raises:
     print("=== Example 1: Raw-byte fuzzing ===")
     print("Fuzzing a toy TLV parser for 10 000 iterations...")
 

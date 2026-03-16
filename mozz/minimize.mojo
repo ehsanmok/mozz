@@ -5,9 +5,9 @@ partitioning and removing subsets that still trigger the crash.
 
 Example:
     ```mojo
-    fn is_crash(data: List[UInt8]) raises -> Bool:
+    def is_crash(data: List[UInt8]) raises -> Bool:
         try:
-            broken_parser(Span[UInt8](data))
+            broken_parser(Span[UInt8, _](data))
             return False
         except e:
             return _is_crash_message(String(e))
@@ -18,7 +18,7 @@ Example:
 """
 
 
-fn minimize_bytes(
+def minimize_bytes(
     input: List[UInt8],
     is_crash: fn (List[UInt8]) raises -> Bool,
 ) raises -> List[UInt8]:
@@ -77,10 +77,10 @@ fn minimize_bytes(
     return current^
 
 
-fn _check(
+def _check(
     data: List[UInt8],
     is_crash: fn (List[UInt8]) raises -> Bool,
-) -> Bool:
+) raises -> Bool:
     """Invoke ``is_crash`` and treat any exception as a crash.
 
     Args:

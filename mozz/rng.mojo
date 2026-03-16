@@ -63,7 +63,7 @@ fn _default_seed() -> UInt64:
         A ``UInt64`` derived from a stack address XOR'd with a constant.
     """
     var x: UInt64 = 0
-    var p = UnsafePointer[UInt64](to=x)
+    var p = UnsafePointer[UInt64, _](to=x)
     return UInt64(Int(p)) ^ 0xDEADBEEFCAFEBABE
 
 
