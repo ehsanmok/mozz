@@ -295,7 +295,7 @@ fn _run_shell(cmd: String) -> Int:
     Returns:
         0 on success, non-zero on failure.
     """
-    from subprocess import run as _run
+    from std.subprocess import run as _run
 
     try:
         _ = _run(cmd)
