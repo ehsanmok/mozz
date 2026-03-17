@@ -4,7 +4,7 @@ Uses deliberate toy parsers with known bugs to verify that the runner
 finds crashes, classifies rejections correctly, and runs cleanly.
 """
 
-from testing import assert_equal, assert_true, assert_false, TestSuite
+from std.testing import assert_equal, assert_true, assert_false, TestSuite
 from mozz.runner import fuzz, FuzzConfig, _is_crash
 
 

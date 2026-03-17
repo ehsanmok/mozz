@@ -18,7 +18,7 @@ Example:
     ```
 """
 
-from memory import UnsafePointer
+from std.memory import UnsafePointer
 
 
 @always_inline

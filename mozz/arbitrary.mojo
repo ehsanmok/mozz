@@ -33,9 +33,9 @@ Custom types:
     ```
 """
 
-from collections import InlineArray
-from memory import alloc
-from sys.intrinsics import _type_is_eq
+from std.collections import InlineArray
+from std.memory import alloc
+from std.sys.intrinsics import _type_is_eq
 
 from .rng import Xoshiro256
 

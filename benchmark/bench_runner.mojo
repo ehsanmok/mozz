@@ -30,7 +30,7 @@ Run:
     pixi run bench
 """
 
-from benchmark import (
+from std.benchmark import (
     Bench,
     BenchConfig,
     Bencher,

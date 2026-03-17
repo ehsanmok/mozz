@@ -3,7 +3,7 @@
 Covers: default seeds, deduplication, pick(), add(), max size eviction.
 """
 
-from testing import (
+from std.testing import (
     assert_equal,
     assert_true,
     assert_false,

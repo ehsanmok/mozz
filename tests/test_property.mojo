@@ -4,7 +4,7 @@ Verifies: trivially-true properties pass, known-bad properties are caught,
 and the same seed reproduces the same failure.
 """
 
-from testing import assert_equal, assert_true, assert_false, TestSuite
+from std.testing import assert_equal, assert_true, assert_false, TestSuite
 from mozz.rng import Xoshiro256
 from mozz.arbitrary import FuzzableUInt8, FuzzableUInt16, FuzzableInt
 from mozz.property import forall, forall_bytes

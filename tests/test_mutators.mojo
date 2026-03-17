@@ -4,7 +4,7 @@ Verifies: output is always a valid List[UInt8], length constraints, boundary
 value injection, and the weighted MutatorChain dispatch.
 """
 
-from testing import (
+from std.testing import (
     assert_equal,
     assert_true,
     assert_false,

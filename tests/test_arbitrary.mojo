@@ -4,7 +4,7 @@ Covers: in-range values, boundary bias presence, minimize contracts, and
 FuzzableString UTF-8 validity.
 """
 
-from testing import (
+from std.testing import (
     assert_equal,
     assert_true,
     assert_false,

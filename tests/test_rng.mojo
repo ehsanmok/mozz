@@ -3,7 +3,7 @@
 Covers: reproducibility, uniform distribution, fill(), next_below() bias.
 """
 
-from testing import (
+from std.testing import (
     assert_equal,
     assert_true,
     assert_false,
