@@ -55,10 +55,10 @@ Output::
 ```mojo
 from mozz import forall, Gen, Xoshiro256
 
-fn gen_u16(mut rng: Xoshiro256) -> UInt16:
+def gen_u16(mut rng: Xoshiro256) -> UInt16:
     return Gen[UInt16].generate(rng)
 
-fn minimize_u16(v: UInt16) -> List[UInt16]:
+def minimize_u16(v: UInt16) -> List[UInt16]:
     return Gen[UInt16].minimize(v)
 
 def no_overflow(v: UInt16) raises -> Bool:
@@ -92,7 +92,7 @@ def main() raises:
 ### ``fuzz()``
 
 ```mojo
-comptime FuzzTarget = fn(List[UInt8]) raises -> None
+comptime FuzzTarget = def(List[UInt8]) raises -> None
 
 def fuzz(
     target: FuzzTarget,
@@ -121,9 +121,9 @@ error message).  Seeds are merged into the in-memory corpus before the run.
 
 ```mojo
 def forall[T: ImplicitlyCopyable & Movable](
-    prop:        fn(T) raises -> Bool,
-    gen:         fn(mut Xoshiro256) -> T,
-    minimize_fn: fn(T) -> List[T],
+    prop:        def(T) raises -> Bool,
+    gen:         def(mut Xoshiro256) -> T,
+    minimize_fn: def(T) -> List[T],
     trials:      Int    = 1_000,
     seed:        UInt64 = 0,
 ) raises
@@ -137,7 +137,7 @@ minimized value and step count in the error message.
 
 ```mojo
 def forall_bytes(
-    prop:    fn(List[UInt8]) raises -> Bool,
+    prop:    def(List[UInt8]) raises -> Bool,
     max_len: Int    = 1_024,
     trials:  Int    = 1_000,
     seed:    UInt64 = 0,
@@ -152,7 +152,7 @@ Like ``forall[T]`` but generates uniform random byte sequences.  No
 ```mojo
 def minimize_bytes(
     input:    List[UInt8],
-    is_crash: fn(List[UInt8]) raises -> Bool,
+    is_crash: def(List[UInt8]) raises -> Bool,
 ) -> List[UInt8]
 ```
 
@@ -165,10 +165,10 @@ both count as "crash still present".
 ```mojo
 trait Fuzzable(Copyable, Movable):
     @staticmethod
-    fn generate(mut rng: Xoshiro256) -> Self: ...
+    def generate(mut rng: Xoshiro256) -> Self: ...
 
     @staticmethod
-    fn minimize(value: Self) -> List[Self]:
+    def minimize(value: Self) -> List[Self]:
         return List[Self]()  # default: no minimization
 ```
 
@@ -181,8 +181,8 @@ Built-in structs: ``FuzzableBool``, ``FuzzableUInt8``, ``FuzzableUInt16``,
 
 ```mojo
 struct Gen[T: ImplicitlyCopyable & Movable]:
-    @staticmethod fn generate(mut rng: Xoshiro256) -> T
-    @staticmethod fn minimize(value: T)             -> List[T]
+    @staticmethod def generate(mut rng: Xoshiro256) -> T
+    @staticmethod def minimize(value: T)             -> List[T]
 ```
 
 Uses ``@parameter if T == UInt8:`` compile-time dispatch.  Supported: ``Bool``,
@@ -199,21 +199,21 @@ struct Color(ImplicitlyCopyable, Movable):
 
 struct FuzzableColor:
     @staticmethod
-    fn generate(mut rng: Xoshiro256) -> Color:
+    def generate(mut rng: Xoshiro256) -> Color:
         return Color(rng.next_byte(), rng.next_byte(), rng.next_byte())
 
     @staticmethod
-    fn minimize(c: Color) -> List[Color]:
+    def minimize(c: Color) -> List[Color]:
         var out = List[Color]()
         if c.r > 0: out.append(Color(c.r // 2, c.g, c.b))
         if c.g > 0: out.append(Color(c.r, c.g // 2, c.b))
         if c.b > 0: out.append(Color(c.r, c.g, c.b // 2))
         return out^
 
-fn gen_color(mut rng: Xoshiro256) -> Color:
+def gen_color(mut rng: Xoshiro256) -> Color:
     return FuzzableColor.generate(rng)
 
-fn minimize_color(c: Color) -> List[Color]:
+def minimize_color(c: Color) -> List[Color]:
     return FuzzableColor.minimize(c)
 
 def prop(c: Color) raises -> Bool:

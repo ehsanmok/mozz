@@ -21,12 +21,12 @@ struct Color(ImplicitlyCopyable, Movable):
     var g: UInt8
     var b: UInt8
 
-    fn __init__(out self, r: UInt8, g: UInt8, b: UInt8):
+    def __init__(out self, r: UInt8, g: UInt8, b: UInt8):
         self.r = r
         self.g = g
         self.b = b
 
-    fn luminance(self) -> Float32:
+    def luminance(self) -> Float32:
         """Compute perceived luminance (sRGB approximation).
 
         Returns:
@@ -38,7 +38,7 @@ struct Color(ImplicitlyCopyable, Movable):
             + 0.114 * Float32(self.b)
         )
 
-    fn invert(self) -> Color:
+    def invert(self) -> Color:
         """Return the bitwise-inverted colour (255 - channel).
 
         Returns:
@@ -46,7 +46,7 @@ struct Color(ImplicitlyCopyable, Movable):
         """
         return Color(255 - self.r, 255 - self.g, 255 - self.b)
 
-    fn __str__(self) -> String:
+    def __str__(self) -> String:
         return (
             "rgb("
             + String(Int(self.r))
@@ -68,7 +68,7 @@ struct FuzzableColor:
     """
 
     @staticmethod
-    fn generate(mut rng: Xoshiro256) -> Color:
+    def generate(mut rng: Xoshiro256) -> Color:
         """Generate a random ``Color``.
 
         Args:
@@ -80,7 +80,7 @@ struct FuzzableColor:
         return Color(r=rng.next_byte(), g=rng.next_byte(), b=rng.next_byte())
 
     @staticmethod
-    fn minimize(value: Color) -> List[Color]:
+    def minimize(value: Color) -> List[Color]:
         """Minimize by halving each channel independently.
 
         Args:
@@ -103,11 +103,11 @@ struct FuzzableColor:
 # ── Generator / minimizer helpers ─────────────────────────────────────────────
 
 
-fn gen_color(mut rng: Xoshiro256) -> Color:
+def gen_color(mut rng: Xoshiro256) -> Color:
     return FuzzableColor.generate(rng)
 
 
-fn minimize_color(c: Color) -> List[Color]:
+def minimize_color(c: Color) -> List[Color]:
     return FuzzableColor.minimize(c)
 
 

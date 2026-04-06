@@ -28,12 +28,12 @@ from mozz.mutator import (
 comptime _RUNS = 200
 
 
-fn _make_input() -> List[UInt8]:
+def _make_input() -> List[UInt8]:
     var r: List[UInt8] = [0x48, 0x65, 0x6C, 0x6C, 0x6F]  # "Hello"
     return r^
 
 
-fn _make_corpus() -> List[List[UInt8]]:
+def _make_corpus() -> List[List[UInt8]]:
     var c = List[List[UInt8]]()
     var s1: List[UInt8] = [0x01, 0x02]
     var s2: List[UInt8] = [0xFF, 0xFE, 0xFD]

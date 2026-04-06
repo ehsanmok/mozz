@@ -19,12 +19,12 @@ Example:
 from .rng import Xoshiro256
 
 
-fn _boundary_bytes() -> List[UInt8]:
+def _boundary_bytes() -> List[UInt8]:
     """Return the interesting byte boundary values for substitution."""
     return [0x00, 0x01, 0x7E, 0x7F, 0x80, 0xFE, 0xFF]
 
 
-fn _boundary_u16() -> List[UInt16]:
+def _boundary_u16() -> List[UInt16]:
     """Return the interesting UInt16 boundary values for BoundaryInt."""
     return [
         0x0000,
@@ -65,11 +65,11 @@ struct BitFlip:
     Effective for discovering off-by-one errors and flag-dependent branches.
     """
 
-    fn __init__(out self):
+    def __init__(out self):
         """Create a BitFlip mutator."""
         pass
 
-    fn mutate(self, input: Span[UInt8, _], mut rng: Xoshiro256) -> List[UInt8]:
+    def mutate(self, input: Span[UInt8, _], mut rng: Xoshiro256) -> List[UInt8]:
         """Flip 1–4 random bits in a copy of ``input``.
 
         Args:
@@ -98,11 +98,11 @@ struct ByteSubstitution:
     probability to hit common parser edge cases.
     """
 
-    fn __init__(out self):
+    def __init__(out self):
         """Create a ByteSubstitution mutator."""
         pass
 
-    fn mutate(self, input: Span[UInt8, _], mut rng: Xoshiro256) -> List[UInt8]:
+    def mutate(self, input: Span[UInt8, _], mut rng: Xoshiro256) -> List[UInt8]:
         """Replace 1–4 bytes with random or boundary values.
 
         Args:
@@ -134,11 +134,11 @@ struct ByteInsertion:
     Exercises length-parsing code paths that may assume fixed-size fields.
     """
 
-    fn __init__(out self):
+    def __init__(out self):
         """Create a ByteInsertion mutator."""
         pass
 
-    fn mutate(self, input: Span[UInt8, _], mut rng: Xoshiro256) -> List[UInt8]:
+    def mutate(self, input: Span[UInt8, _], mut rng: Xoshiro256) -> List[UInt8]:
         """Insert 1–8 random bytes at a random position.
 
         Args:
@@ -167,11 +167,11 @@ struct ByteDeletion:
     Exercises length checks and under-read recovery paths.
     """
 
-    fn __init__(out self):
+    def __init__(out self):
         """Create a ByteDeletion mutator."""
         pass
 
-    fn mutate(self, input: Span[UInt8, _], mut rng: Xoshiro256) -> List[UInt8]:
+    def mutate(self, input: Span[UInt8, _], mut rng: Xoshiro256) -> List[UInt8]:
         """Delete 1–8 bytes starting at a random position.
 
         Args:
@@ -202,11 +202,11 @@ struct BlockDuplication:
     Useful for exercising repeated-field parsers and length-prefix bugs.
     """
 
-    fn __init__(out self):
+    def __init__(out self):
         """Create a BlockDuplication mutator."""
         pass
 
-    fn mutate(self, input: Span[UInt8, _], mut rng: Xoshiro256) -> List[UInt8]:
+    def mutate(self, input: Span[UInt8, _], mut rng: Xoshiro256) -> List[UInt8]:
         """Copy a random block and insert it at a random position.
 
         Args:
@@ -243,7 +243,7 @@ struct Splice:
 
     var _corpus_ref: List[List[UInt8]]
 
-    fn __init__(out self, corpus: List[List[UInt8]]):
+    def __init__(out self, corpus: List[List[UInt8]]):
         """Create a Splice mutator with a snapshot of the corpus.
 
         Args:
@@ -251,7 +251,7 @@ struct Splice:
         """
         self._corpus_ref = corpus.copy()
 
-    fn mutate(self, input: Span[UInt8, _], mut rng: Xoshiro256) -> List[UInt8]:
+    def mutate(self, input: Span[UInt8, _], mut rng: Xoshiro256) -> List[UInt8]:
         """Splice a random corpus entry onto the first half of ``input``.
 
         Args:
@@ -285,11 +285,11 @@ struct BoundaryInt:
     binary protocol parsers (e.g. payload-length fields).
     """
 
-    fn __init__(out self):
+    def __init__(out self):
         """Create a BoundaryInt mutator."""
         pass
 
-    fn mutate(self, input: Span[UInt8, _], mut rng: Xoshiro256) -> List[UInt8]:
+    def mutate(self, input: Span[UInt8, _], mut rng: Xoshiro256) -> List[UInt8]:
         """Replace 1 or 2 bytes at a random position with a boundary value.
 
         Args:
@@ -340,7 +340,7 @@ struct MutatorChain:
     var _total: UInt64
     var _corpus_snapshot: List[List[UInt8]]
 
-    fn __init__(
+    def __init__(
         out self,
         ids: List[Int],
         weights: List[UInt32],
@@ -361,7 +361,7 @@ struct MutatorChain:
             total += UInt64(weights[i])
         self._total = total
 
-    fn update_corpus(mut self, corpus: List[List[UInt8]]):
+    def update_corpus(mut self, corpus: List[List[UInt8]]):
         """Refresh the corpus snapshot used by the ``Splice`` mutator.
 
         Args:
@@ -369,7 +369,7 @@ struct MutatorChain:
         """
         self._corpus_snapshot = corpus.copy()
 
-    fn mutate(self, input: Span[UInt8, _], mut rng: Xoshiro256) -> List[UInt8]:
+    def mutate(self, input: Span[UInt8, _], mut rng: Xoshiro256) -> List[UInt8]:
         """Pick a mutator by weighted random draw and apply it.
 
         Args:
@@ -404,7 +404,7 @@ struct MutatorChain:
             return BoundaryInt().mutate(input, rng)
 
 
-fn default_mutator() -> MutatorChain:
+def default_mutator() -> MutatorChain:
     """Return the standard weighted mutator chain used by ``fuzz()``.
 
     Default weights:

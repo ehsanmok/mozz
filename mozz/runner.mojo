@@ -21,7 +21,7 @@ from .mutator import MutatorChain, default_mutator
 from .corpus import Corpus, _fnv1a64, _mkdir, _write_file, _zero_pad
 
 
-comptime FuzzTarget = fn(List[UInt8]) raises -> None
+comptime FuzzTarget = def(List[UInt8]) raises -> None
 
 
 struct FuzzConfig:
@@ -57,7 +57,7 @@ struct FuzzConfig:
     var report_file: String
     var timeout_ms: Int
 
-    fn __init__(
+    def __init__(
         out self,
         max_runs: Int = 100_000,
         max_input_len: Int = 65_540,
@@ -103,7 +103,7 @@ struct _Stats:
     var unique_crashes: Int   # unique crash inputs saved to disk
     var corpus_grows: Int
 
-    fn __init__(out self):
+    def __init__(out self):
         self.runs = 0
         self.ok = 0
         self.rejections = 0
@@ -259,7 +259,7 @@ def fuzz(
 
 
 @always_inline
-fn _length_bucket(n: Int) -> Int:
+def _length_bucket(n: Int) -> Int:
     """Return the log2 bucket for length ``n`` (0 = empty, 1 = 1, 2 = 2–3, ...).
 
     Args:
@@ -278,7 +278,7 @@ fn _length_bucket(n: Int) -> Int:
     return b
 
 
-fn _maybe_add_to_corpus(
+def _maybe_add_to_corpus(
     mut corpus: Corpus,
     input: List[UInt8],
     error_msg: String,
@@ -330,7 +330,7 @@ fn _maybe_add_to_corpus(
 # ── Crash detection ───────────────────────────────────────────────────────────
 
 
-fn _is_crash(msg: String) -> Bool:
+def _is_crash(msg: String) -> Bool:
     """Return ``True`` if ``msg`` looks like a panic/assertion, not a parser
     rejection.
 
@@ -358,7 +358,7 @@ fn _is_crash(msg: String) -> Bool:
     return False
 
 
-fn _save_crash(
+def _save_crash(
     data: List[UInt8],
     crash_dir: String,
     crash_num: Int,
@@ -386,7 +386,7 @@ fn _save_crash(
 # ── Progress reporting ────────────────────────────────────────────────────────
 
 
-fn _print_progress(
+def _print_progress(
     stats: _Stats, corpus_size: Int, run: Int, max_runs: Int
 ):
     """Print a one-line progress update.
@@ -408,7 +408,7 @@ fn _print_progress(
     )
 
 
-fn _build_final(
+def _build_final(
     stats: _Stats, corpus_size: Int, seed: UInt64, crash_dir: String
 ) -> String:
     """Build the final run summary as a string.

@@ -1,6 +1,6 @@
 """Example 1: Raw-byte fuzzing with fuzz().
 
-Demonstrates Level 1 API: provide any ``fn(List[UInt8]) raises -> None``
+Demonstrates Level 1 API: provide any ``def(List[UInt8]) raises -> None``
 function and mozz will throw mutated bytes at it, looking for panics /
 assertion failures.
 

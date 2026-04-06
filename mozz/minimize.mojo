@@ -20,7 +20,7 @@ Example:
 
 def minimize_bytes(
     input: List[UInt8],
-    is_crash: fn (List[UInt8]) raises -> Bool,
+    is_crash: def (List[UInt8]) raises -> Bool,
 ) raises -> List[UInt8]:
     """Minimize ``input`` to the smallest prefix/subset that still crashes.
 
@@ -79,7 +79,7 @@ def minimize_bytes(
 
 def _check(
     data: List[UInt8],
-    is_crash: fn (List[UInt8]) raises -> Bool,
+    is_crash: def (List[UInt8]) raises -> Bool,
 ) raises -> Bool:
     """Invoke ``is_crash`` and treat any exception as a crash.
 
@@ -96,7 +96,7 @@ def _check(
         return True
 
 
-fn _remove_range(
+def _remove_range(
     data: List[UInt8],
     start: Int,
     end: Int,

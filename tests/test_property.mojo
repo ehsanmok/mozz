@@ -55,27 +55,27 @@ def bytes_raises_on_nonempty(data: List[UInt8]) raises -> Bool:
 # ── Generator / minimizer wrappers ────────────────────────────────────────────
 
 
-fn gen_uint8(mut rng: Xoshiro256) -> UInt8:
+def gen_uint8(mut rng: Xoshiro256) -> UInt8:
     return FuzzableUInt8.generate(rng)
 
 
-fn minimize_uint8(v: UInt8) -> List[UInt8]:
+def minimize_uint8(v: UInt8) -> List[UInt8]:
     return FuzzableUInt8.minimize(v)
 
 
-fn gen_uint16(mut rng: Xoshiro256) -> UInt16:
+def gen_uint16(mut rng: Xoshiro256) -> UInt16:
     return FuzzableUInt16.generate(rng)
 
 
-fn minimize_uint16(v: UInt16) -> List[UInt16]:
+def minimize_uint16(v: UInt16) -> List[UInt16]:
     return FuzzableUInt16.minimize(v)
 
 
-fn gen_int(mut rng: Xoshiro256) -> Int:
+def gen_int(mut rng: Xoshiro256) -> Int:
     return FuzzableInt.generate(rng)
 
 
-fn minimize_int(v: Int) -> List[Int]:
+def minimize_int(v: Int) -> List[Int]:
     return FuzzableInt.minimize(v)
 
 

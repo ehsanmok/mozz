@@ -52,7 +52,7 @@ from mozz.corpus import Corpus
 
 
 @always_inline
-fn _fill_scalar(mut rng: Xoshiro256, mut buf: List[UInt8]):
+def _fill_scalar(mut rng: Xoshiro256, mut buf: List[UInt8]):
     var n = len(buf)
     var ptr = buf.unsafe_ptr()
     var i = 0
@@ -78,7 +78,7 @@ fn _fill_scalar(mut rng: Xoshiro256, mut buf: List[UInt8]):
 
 
 @always_inline
-fn _fill_simd(mut rng: Xoshiro256, mut buf: List[UInt8]):
+def _fill_simd(mut rng: Xoshiro256, mut buf: List[UInt8]):
     var n = len(buf)
     var ptr = buf.unsafe_ptr()
     var i = 0
@@ -97,7 +97,7 @@ fn _fill_simd(mut rng: Xoshiro256, mut buf: List[UInt8]):
 
 
 @always_inline
-fn _fill_measures(size: Int) -> List[ThroughputMeasure]:
+def _fill_measures(size: Int) -> List[ThroughputMeasure]:
     """Return [bytes, elements] measures for a fill benchmark of ``size`` bytes."""
     var m = List[ThroughputMeasure]()
     m.append(ThroughputMeasure(BenchMetric.bytes, size))

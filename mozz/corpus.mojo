@@ -20,7 +20,7 @@ from .rng import Xoshiro256
 comptime MAX_CORPUS_SIZE: Int = 10_000
 
 
-fn _fnv1a64(data: Span[UInt8, _]) -> UInt64:
+def _fnv1a64(data: Span[UInt8, _]) -> UInt64:
     """FNV-1a 64-bit hash of ``data``.
 
     Args:
@@ -50,7 +50,7 @@ struct Corpus(Movable):
     var _seeds: List[List[UInt8]]
     var _hashes: List[UInt64]
 
-    fn __init__(out self, seeds: List[List[UInt8]]):
+    def __init__(out self, seeds: List[List[UInt8]]):
         """Create a corpus pre-populated with ``seeds``.
 
         Duplicate seeds (by content hash) are silently dropped.
@@ -63,12 +63,8 @@ struct Corpus(Movable):
         for i in range(len(seeds)):
             self._insert(seeds[i].copy())
 
-    fn __moveinit__(out self, deinit take: Corpus):
-        self._seeds = take._seeds^
-        self._hashes = take._hashes^
-
     @staticmethod
-    fn default() -> Corpus:
+    def default() -> Corpus:
         """Return a corpus with the four minimal default seeds.
 
         Default seeds: ``[]``, ``[0x00]``, ``[0xFF]``, ``[0x00, 0x00]``.
@@ -86,7 +82,7 @@ struct Corpus(Movable):
         seeds.append(s3^)
         return Corpus(seeds^)
 
-    fn _insert(mut self, data: List[UInt8]):
+    def _insert(mut self, data: List[UInt8]):
         """Insert ``data`` if not already present; evict oldest if at capacity.
 
         Args:
@@ -104,7 +100,7 @@ struct Corpus(Movable):
         self._seeds.append(data.copy())
         self._hashes.append(h)
 
-    fn add(mut self, input: List[UInt8]):
+    def add(mut self, input: List[UInt8]):
         """Add ``input`` to the corpus (deduplication applied).
 
         Args:
@@ -112,7 +108,7 @@ struct Corpus(Movable):
         """
         self._insert(input)
 
-    fn pick(self, mut rng: Xoshiro256) -> List[UInt8]:
+    def pick(self, mut rng: Xoshiro256) -> List[UInt8]:
         """Return a randomly selected seed (uniform over the corpus).
 
         Biases slightly toward recently added seeds (last 20%) with 40%
@@ -135,7 +131,7 @@ struct Corpus(Movable):
             idx = Int(rng.next_below(UInt64(n)))
         return self._seeds[idx].copy()
 
-    fn size(self) -> Int:
+    def size(self) -> Int:
         """Return the current number of seeds in the corpus.
 
         Returns:
@@ -143,7 +139,7 @@ struct Corpus(Movable):
         """
         return len(self._seeds)
 
-    fn get(self, i: Int) -> List[UInt8]:
+    def get(self, i: Int) -> List[UInt8]:
         """Return a copy of the seed at index ``i``.
 
         Args:
@@ -237,7 +233,7 @@ struct Corpus(Movable):
 # ── File I/O helpers ──────────────────────────────────────────────────────────
 
 
-fn _zero_pad(n: Int, width: Int) -> String:
+def _zero_pad(n: Int, width: Int) -> String:
     """Return ``n`` formatted as a zero-padded decimal string of ``width`` digits.
 
     Args:
@@ -286,7 +282,7 @@ def _mkdir(path: String) raises:
     _ = _run_shell("mkdir -p '" + path + "'")
 
 
-fn _run_shell(cmd: String) -> Int:
+def _run_shell(cmd: String) -> Int:
     """Run a shell command; return 0 on success, non-zero on failure.
 
     Args:

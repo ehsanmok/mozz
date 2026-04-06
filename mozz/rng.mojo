@@ -22,7 +22,7 @@ from std.memory import UnsafePointer
 
 
 @always_inline
-fn _splitmix64(mut state: UInt64) -> UInt64:
+def _splitmix64(mut state: UInt64) -> UInt64:
     """Single step of splitmix64, used for seeding.
 
     Args:
@@ -39,7 +39,7 @@ fn _splitmix64(mut state: UInt64) -> UInt64:
 
 
 @always_inline
-fn _rotl64(x: UInt64, k: Int) -> UInt64:
+def _rotl64(x: UInt64, k: Int) -> UInt64:
     """Left-rotate ``x`` by ``k`` bits.
 
     Args:
@@ -52,7 +52,7 @@ fn _rotl64(x: UInt64, k: Int) -> UInt64:
     return (x << UInt64(k)) | (x >> UInt64(64 - k))
 
 
-fn _default_seed() -> UInt64:
+def _default_seed() -> UInt64:
     """Generate a non-deterministic seed from a stack-variable address.
 
     Takes the address of a local ``UInt64`` variable; ASLR ensures the
@@ -84,7 +84,7 @@ struct Xoshiro256(ImplicitlyCopyable, Movable):
     var s2: UInt64
     var s3: UInt64
 
-    fn __init__(out self, seed: UInt64 = 0):
+    def __init__(out self, seed: UInt64 = 0):
         """Initialize the PRNG from a 64-bit seed.
 
         If ``seed`` is 0 a non-deterministic seed is derived from a stack
@@ -99,20 +99,8 @@ struct Xoshiro256(ImplicitlyCopyable, Movable):
         self.s2 = _splitmix64(s)
         self.s3 = _splitmix64(s)
 
-    fn __moveinit__(out self, deinit take: Xoshiro256):
-        self.s0 = take.s0
-        self.s1 = take.s1
-        self.s2 = take.s2
-        self.s3 = take.s3
-
-    fn __copyinit__(out self, copy: Xoshiro256):
-        self.s0 = copy.s0
-        self.s1 = copy.s1
-        self.s2 = copy.s2
-        self.s3 = copy.s3
-
     @always_inline
-    fn next_u64(mut self) -> UInt64:
+    def next_u64(mut self) -> UInt64:
         """Return the next uniformly random ``UInt64``.
 
         Advances the internal state by one step.
@@ -131,7 +119,7 @@ struct Xoshiro256(ImplicitlyCopyable, Movable):
         return result
 
     @always_inline
-    fn next_u32(mut self) -> UInt32:
+    def next_u32(mut self) -> UInt32:
         """Return the next uniformly random ``UInt32``.
 
         Returns:
@@ -140,7 +128,7 @@ struct Xoshiro256(ImplicitlyCopyable, Movable):
         return UInt32(self.next_u64() >> 32)
 
     @always_inline
-    fn next_byte(mut self) -> UInt8:
+    def next_byte(mut self) -> UInt8:
         """Return a uniformly random byte in ``[0, 255]``.
 
         Returns:
@@ -149,7 +137,7 @@ struct Xoshiro256(ImplicitlyCopyable, Movable):
         return UInt8(self.next_u64() & 0xFF)
 
     @always_inline
-    fn next_below(mut self, n: UInt64) -> UInt64:
+    def next_below(mut self, n: UInt64) -> UInt64:
         """Return a uniformly random value in ``[0, n)``.
 
         Uses rejection sampling to avoid modulo bias.
@@ -170,7 +158,7 @@ struct Xoshiro256(ImplicitlyCopyable, Movable):
                 return r % n
 
     @always_inline
-    fn next_bool(mut self) -> Bool:
+    def next_bool(mut self) -> Bool:
         """Return a uniformly random boolean (50 % each side).
 
         Returns:
@@ -178,7 +166,7 @@ struct Xoshiro256(ImplicitlyCopyable, Movable):
         """
         return (self.next_u64() & 1) == 1
 
-    fn fill(mut self, mut buf: List[UInt8]):
+    def fill(mut self, mut buf: List[UInt8]):
         """Fill ``buf`` with uniformly random bytes.
 
         Uses a single 8-byte store (``bitcast[UInt64]``) per PRNG call instead

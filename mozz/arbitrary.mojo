@@ -19,11 +19,11 @@ Custom types:
         var y: Int
 
         @staticmethod
-        fn generate(mut rng: Xoshiro256) -> Point:
+        def generate(mut rng: Xoshiro256) -> Point:
             return Point(x=FuzzableInt.generate(rng), y=FuzzableInt.generate(rng))
 
         @staticmethod
-        fn minimize(value: Point) -> List[Point]:
+        def minimize(value: Point) -> List[Point]:
             var out = List[Point]()
             if value.x != 0:
                 out.append(Point(x=0, y=value.y))
@@ -60,7 +60,7 @@ trait Fuzzable(Copyable, Movable):
     """
 
     @staticmethod
-    fn generate(mut rng: Xoshiro256) -> Self:
+    def generate(mut rng: Xoshiro256) -> Self:
         """Generate a random instance of ``Self``.
 
         Args:
@@ -72,7 +72,7 @@ trait Fuzzable(Copyable, Movable):
         ...
 
     @staticmethod
-    fn minimize(value: Self) -> List[Self]:
+    def minimize(value: Self) -> List[Self]:
         """Return simpler variants of ``value`` for counterexample minimization.
 
         The default implementation returns an empty list (no minimization).
@@ -94,7 +94,7 @@ struct FuzzableBool:
     """``Fuzzable`` implementation for ``Bool``."""
 
     @staticmethod
-    fn generate(mut rng: Xoshiro256) -> Bool:
+    def generate(mut rng: Xoshiro256) -> Bool:
         """Generate a uniformly random boolean.
 
         Args:
@@ -106,7 +106,7 @@ struct FuzzableBool:
         return rng.next_bool()
 
     @staticmethod
-    fn minimize(value: Bool) -> List[Bool]:
+    def minimize(value: Bool) -> List[Bool]:
         """Minimize: ``True`` → ``[False]``, ``False`` → ``[]``.
 
         Args:
@@ -125,7 +125,7 @@ struct FuzzableUInt8:
     """``Fuzzable`` implementation for ``UInt8``."""
 
     @staticmethod
-    fn generate(mut rng: Xoshiro256) -> UInt8:
+    def generate(mut rng: Xoshiro256) -> UInt8:
         """Generate a random ``UInt8`` with 20% boundary bias.
 
         Args:
@@ -142,7 +142,7 @@ struct FuzzableUInt8:
         return rng.next_byte()
 
     @staticmethod
-    fn minimize(value: UInt8) -> List[UInt8]:
+    def minimize(value: UInt8) -> List[UInt8]:
         """Minimize toward 0: ``v`` → ``[0, v/2]`` (if distinct).
 
         Args:
@@ -163,7 +163,7 @@ struct FuzzableUInt16:
     """``Fuzzable`` implementation for ``UInt16``."""
 
     @staticmethod
-    fn generate(mut rng: Xoshiro256) -> UInt16:
+    def generate(mut rng: Xoshiro256) -> UInt16:
         """Generate a random ``UInt16`` with 20% boundary bias.
 
         Args:
@@ -180,7 +180,7 @@ struct FuzzableUInt16:
         return UInt16(rng.next_u32() & 0xFFFF)
 
     @staticmethod
-    fn minimize(value: UInt16) -> List[UInt16]:
+    def minimize(value: UInt16) -> List[UInt16]:
         """Minimize toward 0.
 
         Args:
@@ -201,7 +201,7 @@ struct FuzzableUInt32:
     """``Fuzzable`` implementation for ``UInt32``."""
 
     @staticmethod
-    fn generate(mut rng: Xoshiro256) -> UInt32:
+    def generate(mut rng: Xoshiro256) -> UInt32:
         """Generate a random ``UInt32`` with 20% boundary bias.
 
         Args:
@@ -219,7 +219,7 @@ struct FuzzableUInt32:
         return rng.next_u32()
 
     @staticmethod
-    fn minimize(value: UInt32) -> List[UInt32]:
+    def minimize(value: UInt32) -> List[UInt32]:
         """Minimize toward 0.
 
         Args:
@@ -240,7 +240,7 @@ struct FuzzableUInt64:
     """``Fuzzable`` implementation for ``UInt64``."""
 
     @staticmethod
-    fn generate(mut rng: Xoshiro256) -> UInt64:
+    def generate(mut rng: Xoshiro256) -> UInt64:
         """Generate a random ``UInt64`` with 20% boundary bias.
 
         Args:
@@ -260,7 +260,7 @@ struct FuzzableUInt64:
         return rng.next_u64()
 
     @staticmethod
-    fn minimize(value: UInt64) -> List[UInt64]:
+    def minimize(value: UInt64) -> List[UInt64]:
         """Minimize toward 0.
 
         Args:
@@ -281,7 +281,7 @@ struct FuzzableInt:
     """``Fuzzable`` implementation for ``Int``."""
 
     @staticmethod
-    fn generate(mut rng: Xoshiro256) -> Int:
+    def generate(mut rng: Xoshiro256) -> Int:
         """Generate a random ``Int`` with 20% boundary bias.
 
         Generates values across the full signed range, including negative
@@ -308,7 +308,7 @@ struct FuzzableInt:
         return -magnitude if rng.next_bool() else magnitude
 
     @staticmethod
-    fn minimize(value: Int) -> List[Int]:
+    def minimize(value: Int) -> List[Int]:
         """Minimize toward 0.
 
         Args:
@@ -338,7 +338,7 @@ struct FuzzableString:
     """
 
     @staticmethod
-    fn generate(mut rng: Xoshiro256) -> String:
+    def generate(mut rng: Xoshiro256) -> String:
         """Generate a random valid UTF-8 string.
 
         Args:
@@ -371,7 +371,7 @@ struct FuzzableString:
         return out^
 
     @staticmethod
-    fn minimize(value: String) -> List[String]:
+    def minimize(value: String) -> List[String]:
         """Minimize by dropping the second half or removing a character.
 
         Args:
@@ -398,7 +398,7 @@ struct FuzzableBytes:
     """
 
     @staticmethod
-    fn generate(mut rng: Xoshiro256) -> List[UInt8]:
+    def generate(mut rng: Xoshiro256) -> List[UInt8]:
         """Generate a random byte sequence of length 0–256.
 
         Args:
@@ -413,7 +413,7 @@ struct FuzzableBytes:
         return out^
 
     @staticmethod
-    fn minimize(value: List[UInt8]) -> List[List[UInt8]]:
+    def minimize(value: List[UInt8]) -> List[List[UInt8]]:
         """Minimize by halving or truncating.
 
         Args:
@@ -435,7 +435,7 @@ struct FuzzableBytes:
 # ── UTF-8 encoding helper ─────────────────────────────────────────────────────
 
 
-fn _encode_utf8_codepoint(cp: UInt32) -> String:
+def _encode_utf8_codepoint(cp: UInt32) -> String:
     """Encode a Unicode codepoint as a UTF-8 ``String``.
 
     Handles 1–3 byte encodings (covers BMP).  Codepoints above U+FFFF are
@@ -494,7 +494,7 @@ struct Gen[T: ImplicitlyCopyable & Movable]:
     """
 
     @staticmethod
-    fn generate(mut rng: Xoshiro256) -> Self.T:
+    def generate(mut rng: Xoshiro256) -> Self.T:
         """Generate a random instance of ``T`` using boundary-biased sampling.
 
         Args:
@@ -522,7 +522,7 @@ struct Gen[T: ImplicitlyCopyable & Movable]:
         return alloc[Self.T](1)[]
 
     @staticmethod
-    fn minimize(value: Self.T) -> List[Self.T]:
+    def minimize(value: Self.T) -> List[Self.T]:
         """Return simpler variants of ``value`` for counterexample minimization.
 
         Args:

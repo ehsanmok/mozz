@@ -14,10 +14,10 @@ Example:
     def no_wrap(v: UInt16) raises -> Bool:
         return Int(v) + Int(v) >= Int(v)
 
-    fn gen_u16(mut rng: Xoshiro256) -> UInt16:
+    def gen_u16(mut rng: Xoshiro256) -> UInt16:
         return FuzzableUInt16.generate(rng)
 
-    fn minimize_u16(v: UInt16) -> List[UInt16]:
+    def minimize_u16(v: UInt16) -> List[UInt16]:
         return FuzzableUInt16.minimize(v)
 
     forall[UInt16](no_wrap, gen_u16, minimize_u16, trials=2000)
@@ -40,9 +40,9 @@ from .rng import Xoshiro256
 def forall[
     T: ImplicitlyCopyable & Movable
 ](
-    prop: fn (T) raises -> Bool,
-    gen: fn (mut Xoshiro256) -> T,
-    minimize_fn: fn (T) -> List[T],
+    prop: def (T) raises -> Bool,
+    gen: def (mut Xoshiro256) -> T,
+    minimize_fn: def (T) -> List[T],
     trials: Int = 1_000,
     seed: UInt64 = 0,
 ) raises:
@@ -58,8 +58,8 @@ def forall[
     Args:
         prop:        The property predicate.  Return ``False`` or raise to
                      signal a counterexample.
-        gen:         Generator function -- ``fn(mut Xoshiro256) -> T``.
-        minimize_fn: Minimizer -- ``fn(T) -> List[T]``.  Called to minimize
+        gen:         Generator function -- ``def(mut Xoshiro256) -> T``.
+        minimize_fn: Minimizer -- ``def(T) -> List[T]``.  Called to minimize
                      the counterexample before raising.
         trials:      Number of random trials (default 1 000).
         seed:        PRNG seed (0 = derive from stack address).
@@ -109,7 +109,7 @@ def forall[
 
 
 def forall_bytes(
-    prop: fn(List[UInt8]) raises -> Bool,
+    prop: def(List[UInt8]) raises -> Bool,
     max_len: Int = 1_024,
     trials: Int = 1_000,
     seed: UInt64 = 0,
@@ -166,7 +166,7 @@ def forall_bytes(
 
 def _ddmin(
     input: List[UInt8],
-    prop: fn(List[UInt8]) raises -> Bool,
+    prop: def(List[UInt8]) raises -> Bool,
 ) -> List[UInt8]:
     """Minimize a failing byte sequence using delta-debugging (granularity-doubling).
 
@@ -183,12 +183,6 @@ def _ddmin(
     """
     var current = input.copy()
 
-    fn still_fails(data: List[UInt8]) -> Bool:
-        try:
-            return not prop(data)
-        except:
-            return True
-
     var granularity = 2
     while len(current) > 1:
         var n = len(current)
@@ -203,7 +197,13 @@ def _ddmin(
                 candidate.append(current[i])
             for i in range(end, n):
                 candidate.append(current[i])
-            if len(candidate) > 0 and still_fails(candidate):
+            var fails = False
+            if len(candidate) > 0:
+                try:
+                    fails = not prop(candidate)
+                except:
+                    fails = True
+            if fails:
                 current = candidate^
                 n = len(current)
                 progress = True
@@ -220,7 +220,7 @@ def _ddmin(
     return current^
 
 
-fn _hex(data: List[UInt8]) -> String:
+def _hex(data: List[UInt8]) -> String:
     """Encode ``data`` as a lowercase hex string.
 
     Args:

@@ -56,19 +56,19 @@ def byte_division_safe(v: UInt8) raises -> Bool:
 # ── Generator / minimizer helpers ─────────────────────────────────────────────
 
 
-fn gen_u16(mut rng: Xoshiro256) -> UInt16:
+def gen_u16(mut rng: Xoshiro256) -> UInt16:
     return FuzzableUInt16.generate(rng)
 
 
-fn minimize_u16(v: UInt16) -> List[UInt16]:
+def minimize_u16(v: UInt16) -> List[UInt16]:
     return FuzzableUInt16.minimize(v)
 
 
-fn gen_u8(mut rng: Xoshiro256) -> UInt8:
+def gen_u8(mut rng: Xoshiro256) -> UInt8:
     return FuzzableUInt8.generate(rng)
 
 
-fn minimize_u8(v: UInt8) -> List[UInt8]:
+def minimize_u8(v: UInt8) -> List[UInt8]:
     return FuzzableUInt8.minimize(v)
 
 
