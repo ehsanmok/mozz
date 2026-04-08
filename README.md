@@ -6,6 +6,7 @@
 
 [![CI](https://github.com/ehsanmok/mozz/actions/workflows/ci.yml/badge.svg)](https://github.com/ehsanmok/mozz/actions/workflows/ci.yml)
 [![Docs](https://github.com/ehsanmok/mozz/actions/workflows/docs.yml/badge.svg)](https://ehsanmok.github.io/mozz/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 > [!WARNING]
 > **Under development.** APIs may change.
