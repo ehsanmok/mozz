@@ -20,9 +20,9 @@ build:
 
 requirements:
   build:
-    - mojo-compiler
+    - mojo-compiler ==0.26.3.0.dev2026041305
   host:
-    - mojo-compiler
+    - mojo-compiler ==0.26.3.0.dev2026041305
   run: []
 
 about:
