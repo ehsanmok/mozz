@@ -31,7 +31,7 @@ def main() raises:
 Crashing inputs are saved to disk, deduplicated, and automatically minimized
 via delta-debugging. Every run is seeded for reproducibility.
 
-## Install
+## Installation
 
 Add to your `pixi.toml`:
 
@@ -188,8 +188,6 @@ different weights.
 
 The PRNG is Xoshiro256++ seeded via SplitMix64. Corpus deduplication uses
 FNV-1a hashing with FIFO eviction at 10k seeds.
-
-## Docs
 
 Full API reference: [ehsanmok.github.io/mozz](https://ehsanmok.github.io/mozz/)
 
