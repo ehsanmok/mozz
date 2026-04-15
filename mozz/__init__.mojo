@@ -1,4 +1,4 @@
-"""Mozz — pure-Mojo fuzzing and property-based testing library.
+"""Pure-Mojo fuzzing and property-based testing library.
 
 Zero external dependencies. No libFuzzer, no C ABI, no compiler flags.
 Write a harness, call ``fuzz()``.
@@ -14,14 +14,14 @@ disk and added to the regression suite.
 ## What is property-based testing?
 
 Property-based testing lets you describe an invariant that must hold across all
-inputs — for example, "encoding then decoding any value returns the original"
-— and the library generates hundreds or thousands of random inputs to falsify
+inputs (for example, "encoding then decoding any value returns the original")
+and the library generates hundreds or thousands of random inputs to falsify
 it. When a counterexample is found, the input is automatically minimized to the
 simplest case that still triggers the failure.
 
 ## Three levels of API
 
-### Level 1 — Raw byte fuzzing
+### Level 1: Raw byte fuzzing
 
 ```mojo
 from mozz import fuzz, FuzzConfig
@@ -47,9 +47,9 @@ Output::
     [mozz]   crashes (uniq): 0
     [mozz] ─────────────────────────────────────────────
 
-### Level 2 — Typed property tests
+### Level 2: Typed property tests
 
-``Gen[T]`` is the parametric generator — use it instead of naming a specific
+``Gen[T]`` is the parametric generator; use it instead of naming a specific
 ``FuzzableXXX`` struct.  Compile-time dispatch via ``@parameter if``.
 
 ```mojo
@@ -72,7 +72,7 @@ def main() raises:
 ``Int``, ``String``.  For ``List[UInt8]`` use ``FuzzableBytes`` directly.
 For custom types write a ``FuzzableMyType`` companion struct.
 
-### Level 3 — Raw byte property tests
+### Level 3: Raw byte property tests
 
 ```mojo
 from mozz import forall_bytes
@@ -177,7 +177,7 @@ Built-in structs: ``FuzzableBool``, ``FuzzableUInt8``, ``FuzzableUInt16``,
 ``FuzzableUInt32``, ``FuzzableUInt64``, ``FuzzableInt``, ``FuzzableString``,
 ``FuzzableBytes``.
 
-### ``Gen[T]`` — parametric dispatch
+### ``Gen[T]``: parametric dispatch
 
 ```mojo
 struct Gen[T: ImplicitlyCopyable & Movable]:
@@ -264,7 +264,7 @@ var rng = Xoshiro256(seed=42)   # seed=0 → entropy from heap address
 rng.next_u64()                  # UInt64
 rng.next_u32()                  # UInt32
 rng.next_byte()                 # UInt8 in [0, 255]
-rng.next_below(n)               # UInt64 in [0, n)  — rejection-sampled
+rng.next_below(n)               # UInt64 in [0, n), rejection-sampled
 rng.next_bool()                 # Bool
 rng.fill(buf)                   # fill List[UInt8] with random bytes
 ```

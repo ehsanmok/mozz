@@ -57,7 +57,7 @@ mozz has three levels of API depending on how much structure you want.
 ### Raw byte fuzzing
 
 Throw mutated bytes at a function. Anything that panics or trips an assertion
-is a crash — raised exceptions are treated as valid rejections.
+is a crash; raised exceptions are treated as valid rejections.
 
 ```mojo
 from mozz import fuzz, FuzzConfig
@@ -96,7 +96,7 @@ def main() raises:
 ```
 
 `Gen[T]` dispatches at compile time for `Bool`, `UInt8`, `UInt16`, `UInt32`,
-`UInt64`, `Int`, and `String`. For other types write a companion struct — see
+`UInt64`, `Int`, and `String`. For other types, write a companion struct (see
 [Custom types](#custom-types) below.
 
 ### Byte-level property tests
@@ -180,7 +180,7 @@ def main() raises:
 
 ## Internals
 
-The mutation engine uses seven weighted operators — bit flips, byte
+The mutation engine uses seven weighted operators: bit flips, byte
 substitution (boundary-biased), insertion, deletion, block duplication,
 cross-corpus splicing, and boundary integer injection. `default_mutator()`
 returns the standard chain; you can build a custom `MutatorChain` with
