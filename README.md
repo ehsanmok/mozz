@@ -8,9 +8,6 @@
 [![Docs](https://github.com/ehsanmok/mozz/actions/workflows/docs.yml/badge.svg)](https://ehsanmok.github.io/mozz/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-> [!WARNING]
-> **Under development.** APIs may change.
-
 Pure-Mojo fuzzing and property-based testing. No libFuzzer, no C FFI,
 no compiler flags. Write a target, call `fuzz()`.
 
@@ -41,7 +38,7 @@ channels = ["https://conda.modular.com/max-nightly", "conda-forge"]
 preview = ["pixi-build"]
 
 [dependencies]
-mozz = { git = "https://github.com/ehsanmok/mozz.git", branch = "main" }
+mozz = { git = "https://github.com/ehsanmok/mozz.git", tag = "v0.1.0" }
 ```
 
 ```bash
@@ -49,6 +46,13 @@ pixi install
 ```
 
 Requires [pixi](https://pixi.sh) (pulls Mojo nightly automatically).
+
+For the latest development version:
+
+```toml
+[dependencies]
+mozz = { git = "https://github.com/ehsanmok/mozz.git", branch = "main" }
+```
 
 ## Usage
 
