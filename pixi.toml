@@ -14,7 +14,7 @@ version = "0.1.0"
 backend = { name = "pixi-build-rattler-build", version = "*" }
 
 [dependencies]
-mojo = "==0.26.3.0.dev2026041305"
+mojo = "<1.0"
 
 [feature.dev.dependencies]
 git        = ">=2"               # For version checks and pre-commit
