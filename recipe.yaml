@@ -1,29 +1,20 @@
-# rattler-build recipe for mozz
-# Pure-Mojo package — no C/C++ dependencies, no FFI.
-
-context:
+package:
   name: mozz
   version: "0.1.0"
-
-package:
-  name: ${{ name }}
-  version: ${{ version }}
 
 source:
   path: .
 
 build:
   script:
-    - mojo --version
-    # Package the pure-Mojo library into a .mojopkg for distribution
-    - mojo package mozz -o $PREFIX/lib/mojo/mozz.mojopkg
+    - mkdir -p $PREFIX/lib/mojo
+    - cp -r mozz $PREFIX/lib/mojo/
 
 requirements:
-  build:
-    - mojo-compiler
   host:
-    - mojo-compiler
-  run: []
+    - mojo ==0.26.3.0.dev2026042005
+  run:
+    - mojo ==0.26.3.0.dev2026042005
 
 about:
   homepage: https://github.com/ehsanmok/mozz
