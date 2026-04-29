@@ -40,9 +40,9 @@ from .rng import Xoshiro256
 def forall[
     T: ImplicitlyCopyable & Movable
 ](
-    prop: def (T) raises -> Bool,
-    gen: def (mut Xoshiro256) -> T,
-    minimize_fn: def (T) -> List[T],
+    prop: def (T) raises thin -> Bool,
+    gen: def (mut Xoshiro256) thin -> T,
+    minimize_fn: def (T) thin -> List[T],
     trials: Int = 1_000,
     seed: UInt64 = 0,
 ) raises:
@@ -109,7 +109,7 @@ def forall[
 
 
 def forall_bytes(
-    prop: def(List[UInt8]) raises -> Bool,
+    prop: def(List[UInt8]) raises thin -> Bool,
     max_len: Int = 1_024,
     trials: Int = 1_000,
     seed: UInt64 = 0,
@@ -166,7 +166,7 @@ def forall_bytes(
 
 def _ddmin(
     input: List[UInt8],
-    prop: def(List[UInt8]) raises -> Bool,
+    prop: def(List[UInt8]) raises thin -> Bool,
 ) -> List[UInt8]:
     """Minimize a failing byte sequence using delta-debugging (granularity-doubling).
 

@@ -21,7 +21,7 @@ from .mutator import MutatorChain, default_mutator
 from .corpus import Corpus, _fnv1a64, _mkdir, _write_file, _zero_pad
 
 
-comptime FuzzTarget = def(List[UInt8]) raises -> None
+comptime FuzzTarget = def(List[UInt8]) raises thin -> None
 
 
 struct FuzzConfig:
