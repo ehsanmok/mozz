@@ -92,7 +92,7 @@ def main() raises:
 ### ``fuzz()``
 
 ```mojo
-comptime FuzzTarget = def(List[UInt8]) raises -> None
+comptime FuzzTarget = def(List[UInt8]) raises thin -> None
 
 def fuzz(
     target: FuzzTarget,
@@ -123,7 +123,7 @@ error message).  Seeds are merged into the in-memory corpus before the run.
 def forall[T: ImplicitlyCopyable & Movable](
     prop:        def(T) raises -> Bool,
     gen:         def(mut Xoshiro256) -> T,
-    minimize_fn: def(T) -> List[T],
+    minimize_fn: def(T) thin -> List[T],
     trials:      Int    = 1_000,
     seed:        UInt64 = 0,
 ) raises
@@ -152,7 +152,7 @@ Like ``forall[T]`` but generates uniform random byte sequences.  No
 ```mojo
 def minimize_bytes(
     input:    List[UInt8],
-    is_crash: def(List[UInt8]) raises -> Bool,
+    is_crash: def(List[UInt8]) raises thin -> Bool,
 ) -> List[UInt8]
 ```
 

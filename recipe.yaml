@@ -12,9 +12,9 @@ build:
 
 requirements:
   host:
-    - mojo ==1.0.0b1.dev2026042717
+    - mojo ==1.0.0b1
   run:
-    - mojo ==1.0.0b1.dev2026042717
+    - mojo ==1.0.0b1
 
 about:
   homepage: https://github.com/ehsanmok/mozz
