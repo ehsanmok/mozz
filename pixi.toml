@@ -11,7 +11,12 @@ name = "mozz"
 version = "0.1.3"
 
 [package.build]
-backend = { name = "pixi-build-rattler-build", version = "*" }
+# Pin below the 0.4 series: pixi-build-rattler-build 0.4.0 serializes
+# compiler/dependency specs as bare strings that pixi <=0.70.2 rejects with
+# "invalid type: string, expected struct MatchSpec", killing fresh builds
+# before they start. 0.3.13 is the newest backend compatible with this
+# pixi; floating with "*" silently breaks CI.
+backend = { name = "pixi-build-rattler-build", version = "==0.3.13" }
 
 [dependencies]
 mozz = { path = "." }
