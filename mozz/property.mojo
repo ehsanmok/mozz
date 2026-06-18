@@ -38,7 +38,7 @@ from .rng import Xoshiro256
 
 
 def forall[
-    T: ImplicitlyCopyable & Movable
+    T: ImplicitlyCopyable & Movable & ImplicitlyDeletable
 ](
     prop: def (T) raises thin -> Bool,
     gen: def (mut Xoshiro256) thin -> T,
@@ -52,8 +52,8 @@ def forall[
     minimize it before the error is raised.
 
     Parameters:
-        T: Type of the generated value (must be ``ImplicitlyCopyable`` and
-           ``Movable``).
+        T: Type of the generated value (must be ``ImplicitlyCopyable``,
+           ``Movable``, and ``ImplicitlyDeletable``).
 
     Args:
         prop:        The property predicate.  Return ``False`` or raise to
