@@ -99,8 +99,8 @@ struct _Stats:
     var runs: Int
     var ok: Int
     var rejections: Int
-    var crashes: Int          # total crash hits (including duplicates)
-    var unique_crashes: Int   # unique crash inputs saved to disk
+    var crashes: Int  # total crash hits (including duplicates)
+    var unique_crashes: Int  # unique crash inputs saved to disk
     var corpus_grows: Int
 
     def __init__(out self):
@@ -143,7 +143,7 @@ def fuzz(
     var corpus = Corpus.default()
     for i in range(len(seeds)):
         corpus.add(seeds[i].copy())
-    if len(config.corpus_dir) > 0:
+    if config.corpus_dir.byte_length() > 0:
         try:
             var loaded = Corpus.load(config.corpus_dir)
             # Merge all loaded seeds in order (not random) so every seed is seen.
@@ -209,8 +209,10 @@ def fuzz(
                     seen_crash_hashes.append(ch)
                     stats.unique_crashes += 1
                     _save_crash(
-                        mutated, config.crash_dir, stats.unique_crashes,
-                        config.verbose
+                        mutated,
+                        config.crash_dir,
+                        stats.unique_crashes,
+                        config.verbose,
                     )
             else:
                 stats.rejections += 1
@@ -227,10 +229,12 @@ def fuzz(
             _print_progress(stats, corpus.size(), run, config.max_runs)
 
     # ── Final report ──────────────────────────────────────────────────────────
-    var report = _build_final(stats, corpus.size(), config.seed, config.crash_dir)
+    var report = _build_final(
+        stats, corpus.size(), config.seed, config.crash_dir
+    )
     if config.verbose:
         print(report)
-    if len(config.report_file) > 0:
+    if config.report_file.byte_length() > 0:
         try:
             with open(config.report_file, "w") as f:
                 _ = f.write(report)
@@ -239,7 +243,7 @@ def fuzz(
                 print("[mozz] warning: could not write report file:", String(e))
 
     # Save corpus if persistent
-    if len(config.corpus_dir) > 0:
+    if config.corpus_dir.byte_length() > 0:
         try:
             corpus.save(config.corpus_dir)
         except e:
@@ -308,7 +312,7 @@ def _maybe_add_to_corpus(
             break
 
     var is_new_error = False
-    if len(error_msg) > 0:
+    if error_msg.byte_length() > 0:
         var eh = _fnv1a64(error_msg.as_bytes())
         is_new_error = True
         for i in range(len(seen_error_hashes)):
@@ -386,9 +390,7 @@ def _save_crash(
 # ── Progress reporting ────────────────────────────────────────────────────────
 
 
-def _print_progress(
-    stats: _Stats, corpus_size: Int, run: Int, max_runs: Int
-):
+def _print_progress(stats: _Stats, corpus_size: Int, run: Int, max_runs: Int):
     """Print a one-line progress update.
 
     Args:
@@ -400,11 +402,17 @@ def _print_progress(
     var pct = (run * 100) // max_runs if max_runs > 0 else 0
     print(
         "[mozz]"
-        + " crashes: " + String(stats.crashes)
-        + " | runs: " + String(stats.runs)
-        + " | corpus: " + String(corpus_size)
-        + " | rejects: " + String(stats.rejections)
-        + " | " + String(pct) + "%"
+        + " crashes: "
+        + String(stats.crashes)
+        + " | runs: "
+        + String(stats.runs)
+        + " | corpus: "
+        + String(corpus_size)
+        + " | rejects: "
+        + String(stats.rejections)
+        + " | "
+        + String(pct)
+        + "%"
     )
 
 
@@ -426,18 +434,34 @@ def _build_final(
     var crash_note = ""
     if stats.unique_crashes > 0:
         crash_note = (
-            "\n[mozz]   crash inputs: " + crash_dir + "/crash_*.bin"
+            "\n[mozz]   crash inputs: "
+            + crash_dir
+            + "/crash_*.bin"
             + "\n[mozz]   replay:       mojo replay.mojo <crash_file>"
         )
     return (
         "\n[mozz] ── final report ──────────────────────────────\n"
-        + "[mozz]   seed:           " + String(seed) + "\n"
-        + "[mozz]   runs:           " + String(stats.runs) + "\n"
-        + "[mozz]   ok:             " + String(stats.ok) + "\n"
-        + "[mozz]   rejections:     " + String(stats.rejections) + "\n"
-        + "[mozz]   corpus:         " + String(corpus_size) + " seeds\n"
-        + "[mozz]   crashes (hits): " + String(stats.crashes) + "\n"
-        + "[mozz]   crashes (uniq): " + String(stats.unique_crashes)
-        + crash_note + "\n"
+        + "[mozz]   seed:           "
+        + String(seed)
+        + "\n"
+        + "[mozz]   runs:           "
+        + String(stats.runs)
+        + "\n"
+        + "[mozz]   ok:             "
+        + String(stats.ok)
+        + "\n"
+        + "[mozz]   rejections:     "
+        + String(stats.rejections)
+        + "\n"
+        + "[mozz]   corpus:         "
+        + String(corpus_size)
+        + " seeds\n"
+        + "[mozz]   crashes (hits): "
+        + String(stats.crashes)
+        + "\n"
+        + "[mozz]   crashes (uniq): "
+        + String(stats.unique_crashes)
+        + crash_note
+        + "\n"
         + "[mozz] ─────────────────────────────────────────────"
     )

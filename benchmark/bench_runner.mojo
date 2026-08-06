@@ -98,7 +98,8 @@ def _fill_simd(mut rng: Xoshiro256, mut buf: List[UInt8]):
 
 @always_inline
 def _fill_measures(size: Int) -> List[ThroughputMeasure]:
-    """Return [bytes, elements] measures for a fill benchmark of ``size`` bytes."""
+    """Return [bytes, elements] measures for a fill benchmark of ``size`` bytes.
+    """
     var m = List[ThroughputMeasure]()
     m.append(ThroughputMeasure(BenchMetric.bytes, size))
     # elements = number of next_u64() calls = size / 8
@@ -123,7 +124,7 @@ def main() raises:
 
     @parameter
     @always_inline
-    def bench_scalar_64(mut b: Bencher) capturing:
+    def bench_scalar_64(mut b: Bencher) raises capturing:
         @parameter
         @always_inline
         def call_fn() raises:
@@ -134,7 +135,7 @@ def main() raises:
 
     @parameter
     @always_inline
-    def bench_simd_64(mut b: Bencher) capturing:
+    def bench_simd_64(mut b: Bencher) raises capturing:
         @parameter
         @always_inline
         def call_fn() raises:
@@ -143,8 +144,12 @@ def main() raises:
 
         b.iter[call_fn]()
 
-    bench.bench_function[bench_scalar_64](BenchId("fill_64b", "scalar"), _fill_measures(64))
-    bench.bench_function[bench_simd_64](BenchId("fill_64b", "simd"), _fill_measures(64))
+    bench.bench_function[bench_scalar_64](
+        BenchId("fill_64b", "scalar"), _fill_measures(64)
+    )
+    bench.bench_function[bench_simd_64](
+        BenchId("fill_64b", "simd"), _fill_measures(64)
+    )
 
     # ── Fill: 1 KB ───────────────────────────────────────────────────────────
 
@@ -155,7 +160,7 @@ def main() raises:
 
     @parameter
     @always_inline
-    def bench_scalar_1k(mut b: Bencher) capturing:
+    def bench_scalar_1k(mut b: Bencher) raises capturing:
         @parameter
         @always_inline
         def call_fn() raises:
@@ -166,7 +171,7 @@ def main() raises:
 
     @parameter
     @always_inline
-    def bench_simd_1k(mut b: Bencher) capturing:
+    def bench_simd_1k(mut b: Bencher) raises capturing:
         @parameter
         @always_inline
         def call_fn() raises:
@@ -175,8 +180,12 @@ def main() raises:
 
         b.iter[call_fn]()
 
-    bench.bench_function[bench_scalar_1k](BenchId("fill_1kb", "scalar"), _fill_measures(1024))
-    bench.bench_function[bench_simd_1k](BenchId("fill_1kb", "simd"), _fill_measures(1024))
+    bench.bench_function[bench_scalar_1k](
+        BenchId("fill_1kb", "scalar"), _fill_measures(1024)
+    )
+    bench.bench_function[bench_simd_1k](
+        BenchId("fill_1kb", "simd"), _fill_measures(1024)
+    )
 
     # ── Fill: 16 KB ──────────────────────────────────────────────────────────
 
@@ -187,7 +196,7 @@ def main() raises:
 
     @parameter
     @always_inline
-    def bench_scalar_16k(mut b: Bencher) capturing:
+    def bench_scalar_16k(mut b: Bencher) raises capturing:
         @parameter
         @always_inline
         def call_fn() raises:
@@ -198,7 +207,7 @@ def main() raises:
 
     @parameter
     @always_inline
-    def bench_simd_16k(mut b: Bencher) capturing:
+    def bench_simd_16k(mut b: Bencher) raises capturing:
         @parameter
         @always_inline
         def call_fn() raises:
@@ -207,8 +216,12 @@ def main() raises:
 
         b.iter[call_fn]()
 
-    bench.bench_function[bench_scalar_16k](BenchId("fill_16kb", "scalar"), _fill_measures(16384))
-    bench.bench_function[bench_simd_16k](BenchId("fill_16kb", "simd"), _fill_measures(16384))
+    bench.bench_function[bench_scalar_16k](
+        BenchId("fill_16kb", "scalar"), _fill_measures(16384)
+    )
+    bench.bench_function[bench_simd_16k](
+        BenchId("fill_16kb", "simd"), _fill_measures(16384)
+    )
 
     # ── Mutation throughput ───────────────────────────────────────────────────
 
@@ -219,7 +232,7 @@ def main() raises:
 
     @parameter
     @always_inline
-    def bench_mutate(mut b: Bencher) capturing:
+    def bench_mutate(mut b: Bencher) raises capturing:
         @parameter
         @always_inline
         def call_fn() raises:

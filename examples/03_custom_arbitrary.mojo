@@ -145,7 +145,11 @@ def main() raises:
 
     print("1. Testing double-invert identity over 3 000 random colours...")
     forall[Color](
-        double_invert_is_identity, gen_color, minimize_color, trials=3_000, seed=1
+        double_invert_is_identity,
+        gen_color,
+        minimize_color,
+        trials=3_000,
+        seed=1,
     )
     print("   PASS: invert(invert(c)) == c for all colours\n")
 

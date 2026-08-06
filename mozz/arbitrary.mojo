@@ -35,10 +35,8 @@ Custom types:
 
 from std.collections import InlineArray
 from std.memory import alloc
-from std.sys.intrinsics import _type_is_eq
 
 from .rng import Xoshiro256
-
 
 
 # ── Fuzzable trait ─────────────────────────────────────────────────────────────
@@ -136,7 +134,12 @@ struct FuzzableUInt8:
         """
         if rng.next_below(10) < 2:  # 20% boundary
             var boundaries: InlineArray[UInt8, 6] = [
-                0x00, 0x01, 0x7F, 0x80, 0xFE, 0xFF
+                0x00,
+                0x01,
+                0x7F,
+                0x80,
+                0xFE,
+                0xFF,
             ]
             return boundaries[Int(rng.next_below(6))]
         return rng.next_byte()
@@ -174,7 +177,16 @@ struct FuzzableUInt16:
         """
         if rng.next_below(10) < 2:
             var boundaries: InlineArray[UInt16, 10] = [
-                0, 1, 127, 128, 255, 256, 32767, 32768, 65534, 65535
+                0,
+                1,
+                127,
+                128,
+                255,
+                256,
+                32767,
+                32768,
+                65534,
+                65535,
             ]
             return boundaries[Int(rng.next_below(10))]
         return UInt16(rng.next_u32() & 0xFFFF)
@@ -212,8 +224,20 @@ struct FuzzableUInt32:
         """
         if rng.next_below(10) < 2:
             var boundaries: InlineArray[UInt32, 14] = [
-                0, 1, 127, 128, 255, 256, 32767, 32768, 65535, 65536,
-                2147483647, 2147483648, 4294967294, 4294967295
+                0,
+                1,
+                127,
+                128,
+                255,
+                256,
+                32767,
+                32768,
+                65535,
+                65536,
+                2147483647,
+                2147483648,
+                4294967294,
+                4294967295,
             ]
             return boundaries[Int(rng.next_below(14))]
         return rng.next_u32()
@@ -251,10 +275,24 @@ struct FuzzableUInt64:
         """
         if rng.next_below(10) < 2:
             var boundaries: InlineArray[UInt64, 18] = [
-                0, 1, 127, 128, 255, 256, 32767, 32768, 65535, 65536,
-                2147483647, 2147483648, 4294967295, 4294967296,
-                9223372036854775807, 9223372036854775808,
-                18446744073709551614, 18446744073709551615
+                0,
+                1,
+                127,
+                128,
+                255,
+                256,
+                32767,
+                32768,
+                65535,
+                65536,
+                2147483647,
+                2147483648,
+                4294967295,
+                4294967296,
+                9223372036854775807,
+                9223372036854775808,
+                18446744073709551614,
+                18446744073709551615,
             ]
             return boundaries[Int(rng.next_below(18))]
         return rng.next_u64()
@@ -296,10 +334,31 @@ struct FuzzableInt:
         """
         if rng.next_below(10) < 2:
             var boundaries: InlineArray[Int, 25] = [
-                0, 1, -1, 127, -127, 128, -128, 255, -255, 256, -256,
-                32767, -32767, 32768, -32768, 65535, -65535, 65536, -65536,
-                2147483647, -2147483647, 2147483648, -2147483648,
-                4294967295, -4294967295
+                0,
+                1,
+                -1,
+                127,
+                -127,
+                128,
+                -128,
+                255,
+                -255,
+                256,
+                -256,
+                32767,
+                -32767,
+                32768,
+                -32768,
+                65535,
+                -65535,
+                65536,
+                -65536,
+                2147483647,
+                -2147483647,
+                2147483648,
+                -2147483648,
+                4294967295,
+                -4294967295,
             ]
             return boundaries[Int(rng.next_below(25))]
         # Generate a non-negative magnitude then randomly negate it so that
@@ -381,7 +440,7 @@ struct FuzzableString:
             Simpler string variants.
         """
         var out = List[String]()
-        var n = len(value)
+        var n = value.byte_length()
         if n == 0:
             return out^
         out.append(String(""))
@@ -503,22 +562,24 @@ struct Gen[T: ImplicitlyCopyable & Movable]:
         Returns:
             A pseudo-random value of type ``T``.
         """
-        comptime if _type_is_eq[Self.T, Bool]():
+        comptime if Self.T == Bool:
             return rebind[Self.T](FuzzableBool.generate(rng))
-        elif _type_is_eq[Self.T, UInt8]():
+        elif Self.T == UInt8:
             return rebind[Self.T](FuzzableUInt8.generate(rng))
-        elif _type_is_eq[Self.T, UInt16]():
+        elif Self.T == UInt16:
             return rebind[Self.T](FuzzableUInt16.generate(rng))
-        elif _type_is_eq[Self.T, UInt32]():
+        elif Self.T == UInt32:
             return rebind[Self.T](FuzzableUInt32.generate(rng))
-        elif _type_is_eq[Self.T, UInt64]():
+        elif Self.T == UInt64:
             return rebind[Self.T](FuzzableUInt64.generate(rng))
-        elif _type_is_eq[Self.T, Int]():
+        elif Self.T == Int:
             return rebind[Self.T](FuzzableInt.generate(rng))
-        elif _type_is_eq[Self.T, String]():
+        elif Self.T == String:
             return rebind[Self.T](FuzzableString.generate(rng))
         else:
-            comptime assert False, "Gen[T]: unsupported T; write a FuzzableXXX helper"
+            comptime assert (
+                False
+            ), "Gen[T]: unsupported T; write a FuzzableXXX helper"
         return alloc[Self.T](1)[]
 
     @staticmethod
@@ -531,27 +592,29 @@ struct Gen[T: ImplicitlyCopyable & Movable]:
         Returns:
             A list of simpler variants (may be empty).
         """
-        comptime if _type_is_eq[Self.T, Bool]():
+        comptime if Self.T == Bool:
             var r = FuzzableBool.minimize(rebind[Bool](value))
             return rebind_var[List[Self.T]](r^)
-        elif _type_is_eq[Self.T, UInt8]():
+        elif Self.T == UInt8:
             var r = FuzzableUInt8.minimize(rebind[UInt8](value))
             return rebind_var[List[Self.T]](r^)
-        elif _type_is_eq[Self.T, UInt16]():
+        elif Self.T == UInt16:
             var r = FuzzableUInt16.minimize(rebind[UInt16](value))
             return rebind_var[List[Self.T]](r^)
-        elif _type_is_eq[Self.T, UInt32]():
+        elif Self.T == UInt32:
             var r = FuzzableUInt32.minimize(rebind[UInt32](value))
             return rebind_var[List[Self.T]](r^)
-        elif _type_is_eq[Self.T, UInt64]():
+        elif Self.T == UInt64:
             var r = FuzzableUInt64.minimize(rebind[UInt64](value))
             return rebind_var[List[Self.T]](r^)
-        elif _type_is_eq[Self.T, Int]():
+        elif Self.T == Int:
             var r = FuzzableInt.minimize(rebind[Int](value))
             return rebind_var[List[Self.T]](r^)
-        elif _type_is_eq[Self.T, String]():
+        elif Self.T == String:
             var r = FuzzableString.minimize(rebind[String](value))
             return rebind_var[List[Self.T]](r^)
         else:
-            comptime assert False, "Gen[T]: unsupported T; write a FuzzableXXX helper"
+            comptime assert (
+                False
+            ), "Gen[T]: unsupported T; write a FuzzableXXX helper"
             return List[Self.T]()

@@ -40,9 +40,9 @@ from .rng import Xoshiro256
 def forall[
     T: ImplicitlyCopyable & Movable & ImplicitlyDeletable
 ](
-    prop: def (T) raises thin -> Bool,
-    gen: def (mut Xoshiro256) thin -> T,
-    minimize_fn: def (T) thin -> List[T],
+    prop: def(T) raises thin -> Bool,
+    gen: def(mut Xoshiro256) thin -> T,
+    minimize_fn: def(T) thin -> List[T],
     trials: Int = 1_000,
     seed: UInt64 = 0,
 ) raises:
@@ -232,6 +232,6 @@ def _hex(data: List[UInt8]) -> String:
     comptime HEX = "0123456789abcdef"
     var out = String(capacity=len(data) * 2)
     for i in range(len(data)):
-        out += HEX[Int(data[i] >> 4)]
-        out += HEX[Int(data[i] & 0xF)]
+        out += HEX[byte=Int(data[i] >> 4)]
+        out += HEX[byte=Int(data[i] & 0xF)]
     return out^

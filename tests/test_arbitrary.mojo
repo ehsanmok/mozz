@@ -147,7 +147,7 @@ def test_fuzzable_string_not_empty_sometimes() raises:
     var rng = Xoshiro256(seed=9)
     var saw_nonempty = False
     for _ in range(200):
-        if len(FuzzableString.generate(rng)) > 0:
+        if FuzzableString.generate(rng).byte_length() > 0:
             saw_nonempty = True
             break
     assert_true(saw_nonempty)
@@ -157,7 +157,7 @@ def test_fuzzable_string_length_bound() raises:
     """FuzzableString must produce strings of at most 512 bytes."""
     var rng = Xoshiro256(seed=10)
     for _ in range(500):
-        assert_true(len(FuzzableString.generate(rng)) <= 512)
+        assert_true(FuzzableString.generate(rng).byte_length() <= 512)
 
 
 def test_fuzzable_string_minimize() raises:
@@ -165,7 +165,7 @@ def test_fuzzable_string_minimize() raises:
     var minimized = FuzzableString.minimize("hello world")
     var has_empty = False
     for i in range(len(minimized)):
-        if len(minimized[i]) == 0:
+        if minimized[i].byte_length() == 0:
             has_empty = True
             break
     assert_true(has_empty)
@@ -189,7 +189,8 @@ def test_fuzzable_bytes_length_bound() raises:
 
 
 def test_fuzzable_bytes_minimize() raises:
-    """FuzzableBytes.minimize must include the empty list for non-empty input."""
+    """FuzzableBytes.minimize must include the empty list for non-empty input.
+    """
     var data: List[UInt8] = [0x01, 0x02, 0x03, 0x04]
     var minimized = FuzzableBytes.minimize(data)
     var has_empty = False

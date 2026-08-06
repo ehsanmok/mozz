@@ -22,6 +22,7 @@ from mozz import fuzz, FuzzConfig, Corpus, minimize_bytes
 
 # ── Toy target (same as in test_runner.mojo) ──────────────────────────────────
 
+
 def crasher(data: List[UInt8]) raises:
     """Crashes when both 0x00 and 0xFF appear anywhere in the input."""
     var has_zero = False
@@ -46,23 +47,27 @@ def is_crash(data: List[UInt8]) raises -> Bool:
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
+
 def _hex(data: List[UInt8]) -> String:
     """Encode ``data`` as lowercase hex."""
     comptime HEX = "0123456789abcdef"
     var out = String(capacity=len(data) * 2)
     for i in range(len(data)):
-        out += HEX[Int(data[i] >> 4)]
-        out += HEX[Int(data[i] & 0xF)]
+        out += HEX[byte=Int(data[i] >> 4)]
+        out += HEX[byte=Int(data[i] & 0xF)]
     return out
 
 
 # ── Main ─────────────────────────────────────────────────────────────────────
 
+
 def main() raises:
     var crash_dir = ".mozz_crashes/replay_demo"
 
     # ── Step 0: produce a few crashes so the demo has something to replay ──────
-    print("── step 0: running fuzz() to generate crash inputs ─────────────────")
+    print(
+        "── step 0: running fuzz() to generate crash inputs ─────────────────"
+    )
     var seeds = List[List[UInt8]]()
     var seed_bytes: List[UInt8] = [0x00, 0xFF]
     seeds.append(seed_bytes^)
@@ -105,7 +110,9 @@ def main() raises:
     # ── Step 2: replay the first crash ────────────────────────────────────────
     print("\n── step 2: replay '" + paths[0] + "' ────────────────────────────")
     var crash_input = Corpus.load_crash(paths[0])
-    print("  input bytes (" + String(len(crash_input)) + "):", _hex(crash_input))
+    print(
+        "  input bytes (" + String(len(crash_input)) + "):", _hex(crash_input)
+    )
     try:
         crasher(crash_input)
         print("  ⚠ target did NOT crash on replay (input may be stale)")
@@ -120,6 +127,9 @@ def main() raises:
     print(
         "  reduced by",
         len(crash_input) - len(minimal),
-        "bytes (" + String((len(crash_input) - len(minimal)) * 100
-            // max(1, len(crash_input))) + "% smaller)",
+        "bytes ("
+        + String(
+            (len(crash_input) - len(minimal)) * 100 // max(1, len(crash_input))
+        )
+        + "% smaller)",
     )

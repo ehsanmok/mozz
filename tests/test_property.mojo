@@ -104,7 +104,11 @@ def test_forall_catches_false() raises:
 def test_forall_uint16_trivial() raises:
     """Forall on a trivially-true UInt16 property must pass."""
     forall[UInt16](
-        uint16_positive_or_zero, gen_uint16, minimize_uint16, trials=1_000, seed=3
+        uint16_positive_or_zero,
+        gen_uint16,
+        minimize_uint16,
+        trials=1_000,
+        seed=3,
     )
 
 
@@ -140,7 +144,9 @@ def test_forall_bytes_catches_unexpected_raise() raises:
 
 def test_forall_zero_trials() raises:
     """Forall with trials=0 must not raise (nothing to test)."""
-    forall[UInt8](uint8_always_false, gen_uint8, minimize_uint8, trials=0, seed=8)
+    forall[UInt8](
+        uint8_always_false, gen_uint8, minimize_uint8, trials=0, seed=8
+    )
 
 
 def test_forall_reproducible() raises:
@@ -149,7 +155,11 @@ def test_forall_reproducible() raises:
     for _ in range(2):
         try:
             forall[UInt8](
-                uint8_always_false, gen_uint8, minimize_uint8, trials=10, seed=42
+                uint8_always_false,
+                gen_uint8,
+                minimize_uint8,
+                trials=10,
+                seed=42,
             )
         except e:
             failures.append(String(e))

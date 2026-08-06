@@ -244,7 +244,7 @@ def _zero_pad(n: Int, width: Int) -> String:
         Zero-padded string representation.
     """
     var s = String(n)
-    while len(s) < width:
+    while s.byte_length() < width:
         s = "0" + s
     return s
 
@@ -265,7 +265,8 @@ def _validate_shell_path(path: String) raises:
     if path.find("'") >= 0:
         raise Error(
             "mozz: path contains single quote which is unsafe for shell"
-            " quoting: " + path
+            " quoting: "
+            + path
         )
 
 
@@ -361,7 +362,7 @@ def _list_bin_files(dir: String) raises -> List[String]:
             var lines = content.split("\n")
             for i in range(len(lines)):
                 var l = lines[i].strip()
-                if len(l) > 0:
+                if l.byte_length() > 0:
                     paths.append(String(l))
     except:
         pass
