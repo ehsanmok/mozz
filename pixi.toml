@@ -11,12 +11,24 @@ name = "mozz"
 version = "0.2.0"
 
 [package.build]
-# Pin below the 0.4 series: pixi-build-rattler-build 0.4.0 serializes
-# compiler/dependency specs as bare strings that pixi <=0.70.2 rejects with
-# "invalid type: string, expected struct MatchSpec", killing fresh builds
-# before they start. 0.3.13 is the newest backend compatible with this
-# pixi; floating with "*" silently breaks CI.
-backend = { name = "pixi-build-rattler-build", version = "==0.3.13" }
+# Lower bound only, deliberately.
+#
+# A build backend declares which `pixi-build-api-version` it speaks and
+# pixi provides that as a virtual package, so matching backend to client
+# is the solver's job. An exact pin takes that choice away: `==0.3.13`
+# speaks API 4, and every pixi newer than 0.70.2 provides >= 5, so
+# resolution failed outright with "pixi-build-api-version >=4,<5, for
+# which no candidates were found".
+#
+# That broke consumers, not just this repo. Because this is a git
+# *source* dependency, pixi resolves this backend while solving every
+# environment of every project that depends on it -- so this pin made a
+# plain `pixi install` fail in ehsanmok/json (its issue #3) even for
+# users who never touch this package.
+#
+# A range lets pixi 0.70.x pick 0.3.13 and newer pixi pick a 0.4.x that
+# speaks its API.
+backend = { name = "pixi-build-rattler-build", version = ">=0.3.13" }
 
 [dependencies]
 mozz = { path = "." }
