@@ -530,14 +530,14 @@ def _encode_utf8_codepoint(cp: UInt32) -> String:
 # ── Parametric generator / minimizer ──────────────────────────────────────────
 
 
-struct Gen[T: ImplicitlyCopyable & Movable]:
+struct Gen[T: ImplicitlyCopyable]:
     """Compile-time-dispatched generator and minimizer for built-in types.
 
     Provides a unified parametric API so callers write ``Gen[UInt8].generate(rng)``
     instead of ``FuzzableUInt8.generate(rng)``.  Supported type parameters:
     ``Bool``, ``UInt8``, ``UInt16``, ``UInt32``, ``UInt64``, ``Int``,
     ``String``.  For ``List[UInt8]`` use ``FuzzableBytes`` directly (generic
-    list instantiations are not yet dispatchable via ``@parameter if``).
+    list instantiations are not yet dispatchable via ``comptime if``).
 
     For user-defined types, write a companion ``FuzzableMyType`` struct
     following the same ``generate`` / ``minimize`` static-method pattern and
