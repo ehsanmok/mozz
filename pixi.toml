@@ -32,7 +32,7 @@ backend = { name = "pixi-build-rattler-build", version = ">=0.3.13" }
 
 [dependencies]
 mozz = { path = "." }
-mojo = ">=1.0.0,<1.1.0"
+mojo = ">=1.1.0,<2.0.0"
 
 [feature.dev.dependencies]
 git        = ">=2"               # For version checks and pre-commit

@@ -38,7 +38,7 @@ from .rng import Xoshiro256
 
 
 def forall[
-    T: ImplicitlyCopyable & Movable & ImplicitlyDeletable
+    T: ImplicitlyCopyable & Deinitable
 ](
     prop: def(T) raises thin -> Bool,
     gen: def(mut Xoshiro256) thin -> T,
@@ -52,8 +52,9 @@ def forall[
     minimize it before the error is raised.
 
     Parameters:
-        T: Type of the generated value (must be ``ImplicitlyCopyable``,
-           ``Movable``, and ``ImplicitlyDeletable``).
+        T: Type of the generated value (must be ``ImplicitlyCopyable``
+           and ``Deinitable``; ``ImplicitlyCopyable`` already implies
+           ``Movable``).
 
     Args:
         prop:        The property predicate.  Return ``False`` or raise to
@@ -230,7 +231,7 @@ def _hex(data: List[UInt8]) -> String:
         Hex string, e.g. ``"0a1bff"``.
     """
     comptime HEX = "0123456789abcdef"
-    var out = String(capacity=len(data) * 2)
+    var out = String(capacity_bytes=len(data) * 2)
     for i in range(len(data)):
         out += HEX[byte=Int(data[i] >> 4)]
         out += HEX[byte=Int(data[i] & 0xF)]

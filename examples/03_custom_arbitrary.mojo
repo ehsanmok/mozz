@@ -14,7 +14,7 @@ from mozz.rng import Xoshiro256
 # ── Custom type ───────────────────────────────────────────────────────────────
 
 
-struct Color(ImplicitlyCopyable, Movable):
+struct Color(ImplicitlyCopyable):
     """An 8-bit RGB colour triple."""
 
     var r: UInt8

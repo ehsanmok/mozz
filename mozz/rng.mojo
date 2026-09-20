@@ -18,7 +18,7 @@ Example:
     ```
 """
 
-from std.memory import UnsafePointer
+from std.memory import Pointer
 
 
 @always_inline
@@ -63,11 +63,11 @@ def _default_seed() -> UInt64:
         A ``UInt64`` derived from a stack address XOR'd with a constant.
     """
     var x: UInt64 = 0
-    var p = UnsafePointer[UInt64, _](to=x)
+    var p = Pointer[UInt64, _](to=x)
     return UInt64(Int(p)) ^ 0xDEADBEEFCAFEBABE
 
 
-struct Xoshiro256(ImplicitlyCopyable, Movable):
+struct Xoshiro256(ImplicitlyCopyable):
     """Xoshiro256++ PRNG.
 
     Deterministic when constructed with an explicit nonzero ``seed``.
@@ -182,9 +182,9 @@ struct Xoshiro256(ImplicitlyCopyable, Movable):
         # One u64 store per 8 bytes — no shift/mask overhead
         while i + 8 <= n:
             var v = self.next_u64()
-            (ptr + i).bitcast[UInt64]().store(v)
+            ptr.unsafe_offset(i).unsafe_bitcast[UInt64]().unsafe_store(v)
             i += 8
         # Scalar tail for remaining < 8 bytes
         while i < n:
-            (ptr + i).store(self.next_byte())
+            ptr.unsafe_offset(i).unsafe_store(self.next_byte())
             i += 1

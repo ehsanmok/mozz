@@ -58,17 +58,17 @@ def _fill_scalar(mut rng: Xoshiro256, mut buf: List[UInt8]):
     var i = 0
     while i + 8 <= n:
         var v = rng.next_u64()
-        (ptr + i).store(UInt8(v & 0xFF))
-        (ptr + i + 1).store(UInt8((v >> 8) & 0xFF))
-        (ptr + i + 2).store(UInt8((v >> 16) & 0xFF))
-        (ptr + i + 3).store(UInt8((v >> 24) & 0xFF))
-        (ptr + i + 4).store(UInt8((v >> 32) & 0xFF))
-        (ptr + i + 5).store(UInt8((v >> 40) & 0xFF))
-        (ptr + i + 6).store(UInt8((v >> 48) & 0xFF))
-        (ptr + i + 7).store(UInt8((v >> 56) & 0xFF))
+        ptr.unsafe_offset(i).unsafe_store(UInt8(v & 0xFF))
+        ptr.unsafe_offset(i + 1).unsafe_store(UInt8((v >> 8) & 0xFF))
+        ptr.unsafe_offset(i + 2).unsafe_store(UInt8((v >> 16) & 0xFF))
+        ptr.unsafe_offset(i + 3).unsafe_store(UInt8((v >> 24) & 0xFF))
+        ptr.unsafe_offset(i + 4).unsafe_store(UInt8((v >> 32) & 0xFF))
+        ptr.unsafe_offset(i + 5).unsafe_store(UInt8((v >> 40) & 0xFF))
+        ptr.unsafe_offset(i + 6).unsafe_store(UInt8((v >> 48) & 0xFF))
+        ptr.unsafe_offset(i + 7).unsafe_store(UInt8((v >> 56) & 0xFF))
         i += 8
     while i < n:
-        (ptr + i).store(rng.next_byte())
+        ptr.unsafe_offset(i).unsafe_store(rng.next_byte())
         i += 1
 
 
@@ -84,10 +84,10 @@ def _fill_simd(mut rng: Xoshiro256, mut buf: List[UInt8]):
     var i = 0
     while i + 8 <= n:
         var v = rng.next_u64()
-        (ptr + i).bitcast[UInt64]().store(v)
+        ptr.unsafe_offset(i).unsafe_bitcast[UInt64]().unsafe_store(v)
         i += 8
     while i < n:
-        (ptr + i).store(rng.next_byte())
+        ptr.unsafe_offset(i).unsafe_store(rng.next_byte())
         i += 1
 
 
@@ -107,6 +107,48 @@ def _fill_measures(size: Int) -> List[ThroughputMeasure]:
     return m^
 
 
+def _bench_scalar_fill[size: Int](mut b: Bencher) raises:
+    """Scalar-fill closure for one buffer ``size``; owns its own rng/buf."""
+    var rng = Xoshiro256(seed=1)
+    var buf = List[UInt8](length=size, fill=UInt8(0))
+
+    @always_inline
+    def call_fn() raises {mut rng, mut buf}:
+        _fill_scalar(rng, buf)
+        clobber_memory()
+
+    b.iter(call_fn)
+
+
+def _bench_simd_fill[size: Int](mut b: Bencher) raises:
+    """SIMD-fill closure for one buffer ``size``; owns its own rng/buf."""
+    var rng = Xoshiro256(seed=1)
+    var buf = List[UInt8](length=size, fill=UInt8(0))
+
+    @always_inline
+    def call_fn() raises {mut rng, mut buf}:
+        _fill_simd(rng, buf)
+        clobber_memory()
+
+    b.iter(call_fn)
+
+
+def _bench_mutate(mut b: Bencher) raises:
+    """Mutation-throughput closure; owns its own rng/corpus/mutator."""
+    var rng_m = Xoshiro256(seed=7)
+    var corpus = Corpus.default()
+    var mutator = default_mutator()
+    mutator.update_corpus(corpus._seeds)
+
+    @always_inline
+    def call_fn() raises {mut rng_m, imm corpus, imm mutator}:
+        var seed = corpus.pick(rng_m)
+        var out = mutator.mutate(Span[UInt8, _](seed), rng_m)
+        keep(out)
+
+    b.iter(call_fn)
+
+
 def main() raises:
     print("=" * 60)
     print("mozz benchmark")
@@ -117,136 +159,49 @@ def main() raises:
 
     # ── Fill: 64 bytes ───────────────────────────────────────────────────────
 
-    var rng_s64 = Xoshiro256(seed=1)
-    var buf_s64 = List[UInt8](length=64, fill=UInt8(0))
-    var rng_v64 = Xoshiro256(seed=1)
-    var buf_v64 = List[UInt8](length=64, fill=UInt8(0))
-
-    @parameter
-    @always_inline
-    def bench_scalar_64(mut b: Bencher) raises capturing:
-        @parameter
-        @always_inline
-        def call_fn() raises:
-            _fill_scalar(rng_s64, buf_s64)
-            clobber_memory()
-
-        b.iter[call_fn]()
-
-    @parameter
-    @always_inline
-    def bench_simd_64(mut b: Bencher) raises capturing:
-        @parameter
-        @always_inline
-        def call_fn() raises:
-            _fill_simd(rng_v64, buf_v64)
-            clobber_memory()
-
-        b.iter[call_fn]()
-
-    bench.bench_function[bench_scalar_64](
-        BenchId("fill_64b", "scalar"), _fill_measures(64)
+    bench.bench_function(
+        _bench_scalar_fill[64],
+        BenchId("fill_64b", "scalar"),
+        _fill_measures(64),
     )
-    bench.bench_function[bench_simd_64](
-        BenchId("fill_64b", "simd"), _fill_measures(64)
+    bench.bench_function(
+        _bench_simd_fill[64], BenchId("fill_64b", "simd"), _fill_measures(64)
     )
 
     # ── Fill: 1 KB ───────────────────────────────────────────────────────────
 
-    var rng_s1k = Xoshiro256(seed=1)
-    var buf_s1k = List[UInt8](length=1024, fill=UInt8(0))
-    var rng_v1k = Xoshiro256(seed=1)
-    var buf_v1k = List[UInt8](length=1024, fill=UInt8(0))
-
-    @parameter
-    @always_inline
-    def bench_scalar_1k(mut b: Bencher) raises capturing:
-        @parameter
-        @always_inline
-        def call_fn() raises:
-            _fill_scalar(rng_s1k, buf_s1k)
-            clobber_memory()
-
-        b.iter[call_fn]()
-
-    @parameter
-    @always_inline
-    def bench_simd_1k(mut b: Bencher) raises capturing:
-        @parameter
-        @always_inline
-        def call_fn() raises:
-            _fill_simd(rng_v1k, buf_v1k)
-            clobber_memory()
-
-        b.iter[call_fn]()
-
-    bench.bench_function[bench_scalar_1k](
-        BenchId("fill_1kb", "scalar"), _fill_measures(1024)
+    bench.bench_function(
+        _bench_scalar_fill[1024],
+        BenchId("fill_1kb", "scalar"),
+        _fill_measures(1024),
     )
-    bench.bench_function[bench_simd_1k](
-        BenchId("fill_1kb", "simd"), _fill_measures(1024)
+    bench.bench_function(
+        _bench_simd_fill[1024],
+        BenchId("fill_1kb", "simd"),
+        _fill_measures(1024),
     )
 
     # ── Fill: 16 KB ──────────────────────────────────────────────────────────
 
-    var rng_s16k = Xoshiro256(seed=1)
-    var buf_s16k = List[UInt8](length=16384, fill=UInt8(0))
-    var rng_v16k = Xoshiro256(seed=1)
-    var buf_v16k = List[UInt8](length=16384, fill=UInt8(0))
-
-    @parameter
-    @always_inline
-    def bench_scalar_16k(mut b: Bencher) raises capturing:
-        @parameter
-        @always_inline
-        def call_fn() raises:
-            _fill_scalar(rng_s16k, buf_s16k)
-            clobber_memory()
-
-        b.iter[call_fn]()
-
-    @parameter
-    @always_inline
-    def bench_simd_16k(mut b: Bencher) raises capturing:
-        @parameter
-        @always_inline
-        def call_fn() raises:
-            _fill_simd(rng_v16k, buf_v16k)
-            clobber_memory()
-
-        b.iter[call_fn]()
-
-    bench.bench_function[bench_scalar_16k](
-        BenchId("fill_16kb", "scalar"), _fill_measures(16384)
+    bench.bench_function(
+        _bench_scalar_fill[16384],
+        BenchId("fill_16kb", "scalar"),
+        _fill_measures(16384),
     )
-    bench.bench_function[bench_simd_16k](
-        BenchId("fill_16kb", "simd"), _fill_measures(16384)
+    bench.bench_function(
+        _bench_simd_fill[16384],
+        BenchId("fill_16kb", "simd"),
+        _fill_measures(16384),
     )
 
     # ── Mutation throughput ───────────────────────────────────────────────────
-
-    var rng_m = Xoshiro256(seed=7)
-    var corpus = Corpus.default()
-    var mutator = default_mutator()
-    mutator.update_corpus(corpus._seeds)
-
-    @parameter
-    @always_inline
-    def bench_mutate(mut b: Bencher) raises capturing:
-        @parameter
-        @always_inline
-        def call_fn() raises:
-            var seed = corpus.pick(rng_m)
-            var out = mutator.mutate(Span[UInt8, _](seed), rng_m)
-            keep(out)
-
-        b.iter[call_fn]()
 
     # elements = mutations/sec; bytes ≈ typical 64-byte seed in/out
     var mut_measures = List[ThroughputMeasure]()
     mut_measures.append(ThroughputMeasure(BenchMetric.elements, 1))
     mut_measures.append(ThroughputMeasure(BenchMetric.bytes, 64))
-    bench.bench_function[bench_mutate](
+    bench.bench_function(
+        _bench_mutate,
         BenchId("fuzz", "mutations_per_sec"),
         mut_measures,
     )

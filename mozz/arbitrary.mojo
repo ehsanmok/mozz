@@ -33,7 +33,6 @@ Custom types:
     ```
 """
 
-from std.collections import InlineArray
 from std.memory import alloc
 
 from .rng import Xoshiro256
@@ -133,7 +132,7 @@ struct FuzzableUInt8:
             A pseudo-random ``UInt8``.
         """
         if rng.next_below(10) < 2:  # 20% boundary
-            var boundaries: InlineArray[UInt8, 6] = [
+            var boundaries: Array[UInt8, 6] = [
                 0x00,
                 0x01,
                 0x7F,
@@ -176,7 +175,7 @@ struct FuzzableUInt16:
             A pseudo-random ``UInt16``.
         """
         if rng.next_below(10) < 2:
-            var boundaries: InlineArray[UInt16, 10] = [
+            var boundaries: Array[UInt16, 10] = [
                 0,
                 1,
                 127,
@@ -223,7 +222,7 @@ struct FuzzableUInt32:
             A pseudo-random ``UInt32``.
         """
         if rng.next_below(10) < 2:
-            var boundaries: InlineArray[UInt32, 14] = [
+            var boundaries: Array[UInt32, 14] = [
                 0,
                 1,
                 127,
@@ -274,7 +273,7 @@ struct FuzzableUInt64:
             A pseudo-random ``UInt64``.
         """
         if rng.next_below(10) < 2:
-            var boundaries: InlineArray[UInt64, 18] = [
+            var boundaries: Array[UInt64, 18] = [
                 0,
                 1,
                 127,
@@ -333,7 +332,7 @@ struct FuzzableInt:
             A pseudo-random ``Int`` covering the full signed 64-bit range.
         """
         if rng.next_below(10) < 2:
-            var boundaries: InlineArray[Int, 25] = [
+            var boundaries: Array[Int, 25] = [
                 0,
                 1,
                 -1,

@@ -51,7 +51,7 @@ def is_crash(data: List[UInt8]) raises -> Bool:
 def _hex(data: List[UInt8]) -> String:
     """Encode ``data`` as lowercase hex."""
     comptime HEX = "0123456789abcdef"
-    var out = String(capacity=len(data) * 2)
+    var out = String(capacity_bytes=len(data) * 2)
     for i in range(len(data)):
         out += HEX[byte=Int(data[i] >> 4)]
         out += HEX[byte=Int(data[i] & 0xF)]

@@ -120,7 +120,7 @@ error message).  Seeds are merged into the in-memory corpus before the run.
 ### ``forall[T]()``
 
 ```mojo
-def forall[T: ImplicitlyCopyable & Movable & ImplicitlyDeletable](
+def forall[T: ImplicitlyCopyable & Deinitable](
     prop:        def(T) raises -> Bool,
     gen:         def(mut Xoshiro256) -> T,
     minimize_fn: def(T) thin -> List[T],
@@ -194,7 +194,7 @@ Unsupported types fail at compile time with a ``constrained`` error.
 ```mojo
 from mozz import forall, Xoshiro256
 
-struct Color(ImplicitlyCopyable, Movable):
+struct Color(ImplicitlyCopyable):
     var r: UInt8; var g: UInt8; var b: UInt8
 
 struct FuzzableColor:
