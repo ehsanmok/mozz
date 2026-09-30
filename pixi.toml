@@ -3,12 +3,12 @@ authors = ["ehsanmok <ehsanmok@users.noreply.github.com>"]
 channels = ["https://conda.modular.com/max", "conda-forge"]
 name = "mozz"
 platforms = ["osx-arm64", "linux-aarch64", "linux-64"]
-version = "0.2.0"
+version = "0.2.1"
 preview = ["pixi-build"]
 
 [package]
 name = "mozz"
-version = "0.2.0"
+version = "0.2.1"
 
 [package.build]
 # Lower bound only, deliberately.
@@ -37,7 +37,7 @@ mojo = ">=1.1.0,<2.0.0"
 [feature.dev.dependencies]
 git        = ">=2"               # For version checks and pre-commit
 pre-commit = ">=4.2.0,<5"
-mojodoc    = { git = "https://github.com/ehsanmok/mojodoc.git", branch = "main" }
+mojodoc    = { git = "https://github.com/ehsanmok/mojodoc.git", tag = "v0.1.1" }
 
 [environments]
 default = { features = ["dev"], solve-group = "default" }

@@ -38,7 +38,7 @@ channels = ["https://conda.modular.com/max-nightly", "conda-forge"]
 preview = ["pixi-build"]
 
 [dependencies]
-mozz = { git = "https://github.com/ehsanmok/mozz.git", tag = "v0.1.2" }
+mozz = { git = "https://github.com/ehsanmok/mozz.git", tag = "v0.2.1" }
 ```
 
 ```bash
